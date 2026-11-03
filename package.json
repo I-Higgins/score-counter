@@ -1,0 +1,25 @@
+{
+  "name": "my-offline-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A free, offline, installable web app (PWA). Vanilla HTML/CSS/JS, no build step, data stays on the device.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "rename": "node scripts/rename.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "precache": "node scripts/update-precache.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "test": "node --test tests/unit/*.test.mjs",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/*.test.mjs",
+    "test:all": "npm test && npm run test:e2e"
+  },
+  "devDependencies": {
+    "axe-core": "4.10.3",
+    "playwright": "1.63.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

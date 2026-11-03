@@ -1,0 +1,68 @@
+/* Design tokens. Replace the values with the ones from your Claude Design handoff;
+   keep the names so app.css keeps working. All colours meet WCAG AA in each theme
+   (High contrast aims for AAA). Don't hard-code colours or sizes in app.css. */
+:root{
+  /* Light (default) */
+  --bg:#F4EFE7; --surface:#FFFDF9; --surface-2:#EFE7DA;
+  --ink:#2A2521; --ink-2:#5E554D; --line:#D6CBBB;
+  --accent:#2D5F5D; --accent-press:#1F4644; --on-accent:#FFFFFF;
+  --danger:#A3402F; --focus:#1F4644; --link:#1F4644;
+  --control-off:#8E8377; --knob:#FFFFFF; --input-bg:#FFFFFF;
+  --chip-bg:#DCE8E6; --chip-ink:#1F4644;
+  --scrim:rgba(42,37,33,.45);
+  --shadow-card:0 1px 0 rgba(42,37,33,.06),0 6px 18px rgba(42,37,33,.12);
+  --shadow-dialog:0 24px 64px rgba(42,37,33,.30);
+  --shadow-knob:0 1px 3px rgba(0,0,0,.3);
+  --card-border:0px solid transparent;
+  --border-w:2px;
+
+  /* Type: system fonts only (works offline, no downloads) */
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --fs-small:17px; --fs-body:20px; --fs-button:22px;
+  --fs-title:28px; --fs-heading:34px; --fs-display:40px;
+
+  /* Spacing, shape, touch targets */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
+  --radius-sm:12px; --radius-md:16px; --radius-lg:20px; --radius-xl:24px;
+  --tap-min:44px; --tap-helper:48px; --tap-player:60px; --tap-main:72px;
+
+  /* Motion */
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+  --dur-press:200ms; --dur-fade:220ms; --dur-overlay:320ms;
+}
+[data-theme="dark"]{
+  --bg:#1C1917; --surface:#282320; --surface-2:#332D29;
+  --ink:#F4EFE7; --ink-2:#C9BFB3; --line:#5A514A;
+  --accent:#7FBDB8; --accent-press:#9FD3CE; --on-accent:#10201F;
+  --danger:#F08C78; --focus:#F2C94C; --link:#9FD3CE;
+  --control-off:#8A8076; --input-bg:#1C1917;
+  --chip-bg:#2F4A48; --chip-ink:#CFE7E4;
+  --scrim:rgba(0,0,0,.6);
+  --shadow-card:0 6px 18px rgba(0,0,0,.5);
+  --shadow-dialog:0 24px 64px rgba(0,0,0,.6);
+  --card-border:1px solid rgba(255,255,255,.08);
+}
+[data-theme="contrast"]{
+  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#FFFFFF;
+  --ink:#000000; --ink-2:#1F1F1F; --line:#000000;
+  --accent:#003B3A; --accent-press:#000000; --on-accent:#FFFFFF;
+  --danger:#8A1C0C; --focus:#000000; --link:#003B3A;
+  --control-off:#4D4D4D; --input-bg:#FFFFFF;
+  --chip-bg:#FFFFFF; --chip-ink:#000000;
+  --scrim:rgba(0,0,0,.7);
+  --shadow-card:none; --shadow-dialog:none; --shadow-knob:0 0 0 2px #000000;
+  --card-border:3px solid #000000;
+  --border-w:3px;
+}
+[data-text="large"]{
+  --fs-small:20px; --fs-body:24px; --fs-button:26px;
+  --fs-title:34px; --fs-heading:41px; --fs-display:48px;
+}
+[data-text="xl"]{
+  --fs-small:24px; --fs-body:28px; --fs-button:31px;
+  --fs-title:39px; --fs-heading:48px; --fs-display:56px;
+}
+@media (prefers-reduced-motion:reduce){
+  :root{ --dur-press:0ms; --dur-fade:0ms; --dur-overlay:0ms; }
+}
