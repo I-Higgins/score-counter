@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>App icon</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+</style>
+</helmet>
+<div style="width: 1200px; height: 640px; box-sizing: border-box; background: #1A1A1F; color: #F4F4F6; padding: 48px 60px; display: flex; gap: 60px; align-items: flex-start">
+
+  <figure style="margin: 0; display: flex; flex-direction: column; gap: 16px">
+    <svg role="img" aria-label="Score Counter icon: three score bars of falling length on a dark tile" width="480" height="480" viewBox="0 0 1024 1024" style="border-radius: 108px">
+      <rect width="1024" height="1024" fill="#0E0E11"></rect>
+      <rect x="200" y="250" width="624" height="150" rx="56" fill="#F2D35E"></rect>
+      <rect x="200" y="437" width="500" height="150" rx="56" fill="#F59A4A"></rect>
+      <rect x="200" y="624" width="360" height="150" rx="56" fill="#F37DB8"></rect>
+      <circle cx="744" cy="699" r="80" fill="#F4F4F6"></circle>
+      <path d="M744 654v90M699 699h90" stroke="#0E0E11" stroke-width="26" stroke-linecap="round"></path>
+    </svg>
+    <figcaption style="font-size: 16px; line-height: 1.5; color: #C4C4CC"><strong style="color: #F4F4F6">icon-1024.png · apple-touch-icon 180</strong><br>Full-bleed square. iOS rounds the corners itself (preview shows the rounding).</figcaption>
+  </figure>
+
+  <figure style="margin: 0; display: flex; flex-direction: column; gap: 16px">
+    <svg role="img" aria-label="Maskable icon with safe zone marked" width="480" height="480" viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="#0E0E11"></rect>
+      <rect x="282" y="322" width="460" height="110" rx="42" fill="#F2D35E"></rect>
+      <rect x="282" y="457" width="368" height="110" rx="42" fill="#F59A4A"></rect>
+      <rect x="282" y="592" width="266" height="110" rx="42" fill="#F37DB8"></rect>
+      <circle cx="680" cy="647" r="58" fill="#F4F4F6"></circle>
+      <path d="M680 614v66M647 647h66" stroke="#0E0E11" stroke-width="20" stroke-linecap="round"></path>
+      <circle cx="512" cy="512" r="410" fill="none" stroke="#6FB2F7" stroke-width="6" stroke-dasharray="24 18"></circle>
+    </svg>
+    <figcaption style="font-size: 16px; line-height: 1.5; color: #C4C4CC"><strong style="color: #F4F4F6">icon-maskable-512.png</strong><br>Artwork kept inside the 80% safe circle (dashed, not exported) so Android’s circle crop never clips it.</figcaption>
+  </figure>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

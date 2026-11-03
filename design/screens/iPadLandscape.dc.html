@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Scoreboard (iPad landscape)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+th,td{padding:0}
+</style>
+</helmet>
+<div style="width: 1180px; height: 820px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 32px 32px 28px; display: flex; flex-direction: column; gap: 18px; font-variant-numeric: tabular-nums">
+
+  <div style="display: flex; align-items: center; gap: 10px">
+    <button aria-label="Menu" style="width: 56px; height: 56px; border-radius: 28px; border: 0; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+    </button>
+    <a href="NewGame.dc.html" style="height: 56px; border-radius: 28px; background: #1E1E23; color: #F4F4F6; padding: 0 20px; display: flex; align-items: center; gap: 10px; text-decoration: none">
+      <span style="font-size: 19px; font-weight: 700">5 Crowns</span><span style="font-size: 15px; color: #A1A1AA">Family</span>
+    </a>
+    <div style="flex-grow: 1"></div>
+    <button style="height: 56px; border-radius: 28px; border: 0; background: #1E1E23; color: #F4F4F6; padding: 0 18px; font-size: 16px; font-weight: 600">Lowest first</button>
+    <button aria-label="Undo last change" style="width: 56px; height: 56px; border-radius: 28px; border: 0; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>
+    </button>
+    <button aria-label="Add player" style="width: 56px; height: 56px; border-radius: 28px; border: 0; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+  </div>
+
+  <div style="display: flex; gap: 20px; flex-grow: 1; min-height: 0">
+    <ol aria-label="Players" style="list-style: none; margin: 0; padding: 0; flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 136px; gap: 16px; align-content: start">
+      <sc-for list="{{players}}" as="p" hint-placeholder-count="6">
+        <li style="background: {{p.color}}; color: #121214; border-radius: 24px; padding: 14px 12px 12px 18px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="width: 32px; height: 32px; border-radius: 16px; background: rgba(18,18,20,0.14); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700">{{p.rank}}</span>
+            <span style="font-size: 24px; font-weight: 700; flex-grow: 1">{{p.name}}</span>
+            <sc-if value="{{p.tag}}" hint-placeholder-val="{{ false }}"><span style="{{p.tagStyle}}">{{p.tag}}</span></sc-if>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <button aria-label="Minus one for {{p.name}}" style="width: 76px; height: 72px; border-radius: 18px; border: 0; background: rgba(18,18,20,0.12); color: #121214; font-size: 34px">−</button>
+            <span style="{{p.totalStyle}}">{{p.total}}</span>
+            <button aria-label="Plus one for {{p.name}}" style="width: 76px; height: 72px; border-radius: 18px; border: 0; background: rgba(18,18,20,0.12); color: #121214; font-size: 34px">+</button>
+          </div>
+        </li>
+      </sc-for>
+    </ol>
+
+    <aside aria-label="Round and history" style="width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 20px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 26px; font-weight: 800">Round 5 <span style="color: #A1A1AA; font-weight: 600">of 13</span></span>
+        <span style="font-size: 17px; color: #E5E5EA; font-weight: 600">5 cards · 5s wild · Priya deals</span>
+      </div>
+      <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 20px; padding: 12px 16px">
+        <table style="width: 100%; border-collapse: collapse; font-size: 16px">
+          <caption style="text-align: left; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase; padding-bottom: 6px">This game so far</caption>
+          <thead><tr style="height: 30px; color: #A1A1AA; font-size: 13px"><th scope="col" style="text-align: left; font-weight: 600">Player</th><th scope="col" style="text-align: right; font-weight: 600">R3</th><th scope="col" style="text-align: right; font-weight: 600">R4</th><th scope="col" style="text-align: right; font-weight: 600">Total</th></tr></thead>
+          <tbody>
+            <sc-for list="{{players}}" as="p" hint-placeholder-count="6">
+              <tr style="height: 34px; border-top: 1px solid #26262C">
+                <th scope="row" style="text-align: left; font-weight: 600"><span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{p.color}}"></span>{{p.name}}</span></th>
+                <td style="text-align: right; color: #C4C4CC">{{p.r3}}</td>
+                <td style="text-align: right; color: #C4C4CC">{{p.r4}}</td>
+                <td style="text-align: right; font-weight: 800">{{p.total}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <a href="iPadRoundEntry.dc.html" style="height: 64px; border-radius: 20px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; text-decoration: none">End round 5</a>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var fmt = function (n) { return n < 0 ? '−' + Math.abs(n) : '' + n; };
+    var raw = [
+      ['Platypus', '#9CD873', -2, -2, 'Leading'], ['Theo', '#F59A4A', 0, 9, ''], ['Oscar', '#B98AF6', 3, 6, ''],
+      ['Rosa', '#F37DB8', 8, 6, ''], ['Priya', '#F2D35E', 12, 10, 'Dealer'], ['Panda', '#6CCFB4', 15, 13, '']
+    ];
+    var rank = 0, prev = null;
+    var players = raw.map(function (p, i) {
+      var t = p[2] + p[3];
+      if (t !== prev) { rank = i + 1; prev = t; }
+      return {
+        name: p[0], color: p[1], r3: fmt(p[2]), r4: fmt(p[3]), total: fmt(t), rank: rank, tag: p[4] || false,
+        tagStyle: p[4] === 'Leading'
+          ? 'font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: #121214; color: #F4F4F6; padding: 4px 8px; border-radius: 8px'
+          : 'font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border: 1.5px solid #121214; padding: 3px 7px; border-radius: 8px',
+        totalStyle: t < 0
+          ? 'flex-grow: 1; text-align: center; font-size: 40px; font-weight: 800; line-height: 1; background: #121214; color: #FFB4B4; border-radius: 12px; padding: 4px 0'
+          : 'flex-grow: 1; text-align: center; font-size: 48px; font-weight: 800; line-height: 1'
+      };
+    });
+    return { players: players };
+  }
+}
+</script>
+</body>
+</html>

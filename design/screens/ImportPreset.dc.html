@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Add a shared game</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #050506; color: #F4F4F6; display: flex; flex-direction: column; justify-content: flex-end">
+  <div aria-hidden="true" style="flex-grow: 1; padding: 58px 16px 0; display: flex; flex-direction: column; gap: 10px; opacity: 0.25">
+    <div style="height: 48px; border-radius: 24px; background: #1E1E23"></div>
+    <div style="height: 84px; border-radius: 20px; background: #F37DB8"></div>
+    <div style="height: 84px; border-radius: 20px; background: #F59A4A"></div>
+    <div style="height: 84px; border-radius: 20px; background: #F2D35E"></div>
+  </div>
+
+  <section role="dialog" aria-modal="true" aria-labelledby="importTitle" style="background: #1A1A1F; border-radius: 28px 28px 0 0; padding: 12px 20px 34px; display: flex; flex-direction: column; gap: 14px">
+    <span aria-hidden="true" style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #52525B"></span>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Shared game</span>
+      <h1 id="importTitle" style="margin: 0; font-size: 26px; font-weight: 800">Add “Dutch Blitz (first to 150)”?</h1>
+    </div>
+
+    <ul style="list-style: none; margin: 0; padding: 0; background: #0E0E11; border-radius: 16px">
+      <sc-for list="{{rules}}" as="r" hint-placeholder-count="5">
+        <li style="display: flex; justify-content: space-between; align-items: center; height: 46px; padding: 0 14px; border-top: {{r.border}}; font-size: 16px">
+          <span style="color: #A1A1AA">{{r.k}}</span>
+          <span style="font-weight: 700">{{r.v}}</span>
+        </li>
+      </sc-for>
+    </ul>
+
+    <div style="display: flex; gap: 10px; align-items: flex-start; background: #24242A; border-radius: 14px; padding: 12px 14px">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E5E5EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+      <span style="font-size: 14px; line-height: 1.4; color: #E5E5EA">Only the game’s rules are in this link. No players, scores or history. Nothing is sent anywhere.</span>
+    </div>
+    <span style="font-size: 14px; color: #A1A1AA">You already have “Dutch Blitz”. This one will be added alongside it.</span>
+
+    <a href="NewGame.dc.html" style="height: 60px; border-radius: 20px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; text-decoration: none">Add game</a>
+    <a href="Phone.dc.html" style="height: 52px; border-radius: 18px; background: #2A2A31; color: #F4F4F6; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; text-decoration: none">Not now</a>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var rules = [
+      { k: 'Winner', v: 'Highest score' },
+      { k: 'Game ends', v: 'First to 150' },
+      { k: 'Round counter', v: 'Off' },
+      { k: 'Each round shows', v: 'None' },
+      { k: 'Quick buttons', v: '+1  +5  −2' }
+    ].map(function (r, i) { return Object.assign(r, { border: i === 0 ? '0' : '1px solid #26262C' }); });
+    return { rules: rules };
+  }
+}
+</script>
+</body>
+</html>
