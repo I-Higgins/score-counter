@@ -57,12 +57,13 @@ export async function ensureSeeded() {
 }
 
 // ---------- reading ----------
-export const listGames = async () => (await store.list('games')).sort((a, b) => (b.builtIn - a.builtIn) || (a.createdAt || 0) - (b.createdAt || 0));
-export const listGroups = async () => (await store.list('groups')).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-export const listMatches = () => store.list('matches');
-export const getGame = (id) => store.get('games', id);
-export const getGroup = (id) => store.get('groups', id);
-export const getMatch = (id) => store.get('matches', id);
+// Reads wait for queued writes, so a screen never sees data older than the last tap.
+export const listGames = async () => { await queue; return (await store.list('games')).sort((a, b) => (b.builtIn - a.builtIn) || (a.createdAt || 0) - (b.createdAt || 0)); };
+export const listGroups = async () => { await queue; return (await store.list('groups')).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); };
+export const listMatches = async () => { await queue; return store.list('matches'); };
+export const getGame = async (id) => { await queue; return store.get('games', id); };
+export const getGroup = async (id) => { await queue; return store.get('groups', id); };
+export const getMatch = async (id) => { await queue; return store.get('matches', id); };
 
 export async function currentMatch() {
   await queue;
