@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Welcome</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 58px 24px 34px; display: flex; flex-direction: column; gap: 14px">
+  <div style="flex-grow: 1"></div>
+  <svg aria-hidden="true" width="160" height="140" viewBox="0 0 160 140" style="align-self: center">
+    <rect x="10" y="10" width="140" height="34" rx="12" fill="#F2D35E"></rect>
+    <rect x="10" y="53" width="112" height="34" rx="12" fill="#F59A4A"></rect>
+    <rect x="10" y="96" width="80" height="34" rx="12" fill="#F37DB8"></rect>
+    <text x="134" y="34" font-family="-apple-system, system-ui, sans-serif" font-size="20" font-weight="800" fill="#121214" text-anchor="end">1</text>
+    <text x="106" y="77" font-family="-apple-system, system-ui, sans-serif" font-size="20" font-weight="800" fill="#121214" text-anchor="end">2</text>
+    <text x="74" y="120" font-family="-apple-system, system-ui, sans-serif" font-size="20" font-weight="800" fill="#121214" text-anchor="end">3</text>
+  </svg>
+  <h1 style="margin: 8px 0 0; font-size: 30px; font-weight: 800; text-align: center">Ready to keep score</h1>
+  <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #C4C4CC; text-align: center">Free, no ads, and works offline. Everything stays on this phone.</p>
+  <div style="flex-grow: 1"></div>
+
+  <a href="NewGame.dc.html" style="height: 60px; border-radius: 20px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; text-decoration: none">Create a group</a>
+  <span style="font-size: 13px; color: #A1A1AA; text-align: center; margin-top: -6px">For people you play with often, like Family. Keeps stats.</span>
+  <a href="Phone.dc.html" style="height: 52px; border-radius: 18px; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; text-decoration: none">Quick game</a>
+  <span style="font-size: 13px; color: #A1A1AA; text-align: center; margin-top: -6px">Just add names and play. Not saved to stats.</span>
+  <button style="height: 48px; border: 0; background: transparent; color: #8AB4FF; font-size: 16px; font-weight: 600">Restore from a backup</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

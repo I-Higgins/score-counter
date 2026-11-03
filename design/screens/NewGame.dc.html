@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>New game</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 58px 16px 34px; display: flex; flex-direction: column; gap: 10px">
+
+  <div style="display: flex; align-items: center; gap: 10px">
+    <a href="Phone.dc.html" aria-label="Back to current game" style="width: 48px; height: 48px; border-radius: 24px; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 24px; font-weight: 800">New game</h1>
+  </div>
+
+  <h2 style="margin: 6px 4px 0; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Group</h2>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap">
+    <button aria-pressed="true" style="height: 44px; border-radius: 22px; border: 0; background: #F4F4F6; color: #0E0E11; padding: 0 18px; font-size: 16px; font-weight: 700">Family</button>
+    <button aria-pressed="false" style="height: 44px; border-radius: 22px; border: 0; background: #1E1E23; color: #F4F4F6; padding: 0 18px; font-size: 16px; font-weight: 600">Friends</button>
+    <button aria-pressed="false" style="height: 44px; border-radius: 22px; border: 0; background: #1E1E23; color: #F4F4F6; padding: 0 18px; font-size: 16px; font-weight: 600">Quick game</button>
+    <a href="Group.dc.html" aria-label="Manage groups" style="height: 44px; border-radius: 22px; border: 1.5px dashed #52525B; color: #E5E5EA; padding: 0 16px; font-size: 16px; font-weight: 600; display: flex; align-items: center; text-decoration: none; box-sizing: border-box">+ Group</a>
+  </div>
+
+  <h2 style="margin: 8px 4px 0; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Playing tonight</h2>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap">
+    <sc-for list="{{people}}" as="p" hint-placeholder-count="5">
+      <button aria-pressed="{{p.on}}" style="{{p.style}}"><span style="width: 14px; height: 14px; border-radius: 7px; background: {{p.color}}"></span>{{p.name}}</button>
+    </sc-for>
+  </div>
+
+  <h2 style="margin: 8px 4px 0; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Game</h2>
+  <ul style="list-style: none; margin: 0; padding: 0; background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 18px; overflow: hidden">
+    <sc-for list="{{games}}" as="g" hint-placeholder-count="3">
+      <li style="display: flex; align-items: center; border-top: {{g.border}}">
+        <button aria-pressed="{{g.on}}" style="flex-grow: 1; min-height: 64px; border: 0; background: transparent; color: #F4F4F6; display: flex; align-items: center; gap: 12px; padding: 0 0 0 16px; text-align: left">
+          <span style="{{g.radio}}"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 17px; font-weight: 700">{{g.name}}</span>
+            <span style="font-size: 13px; color: #A1A1AA">{{g.rules}}</span>
+          </span>
+        </button>
+        <a href="GameEditor.dc.html" aria-label="Edit {{g.name}}" style="width: 52px; height: 64px; display: flex; align-items: center; justify-content: center; color: #A1A1AA">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+  <a href="GameEditor.dc.html" style="height: 48px; border-radius: 16px; border: 1.5px dashed #52525B; color: #E5E5EA; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; text-decoration: none; box-sizing: border-box">+ Create a game</a>
+
+  <div style="flex-grow: 1"></div>
+  <span style="font-size: 13px; color: #A1A1AA; text-align: center">Starting saves the current game to Family’s history</span>
+  <a href="Phone.dc.html" style="height: 60px; border-radius: 20px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; text-decoration: none">Start 5 Crowns · 4 players</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var people = [
+      { name: 'Isaac', color: '#F59A4A', on: true },
+      { name: 'Kerryn', color: '#F37DB8', on: true },
+      { name: 'Martin', color: '#B98AF6', on: true },
+      { name: 'Marlies', color: '#F2D35E', on: true },
+      { name: 'Hedgehog', color: '#9CD873', on: false }
+    ].map(function (p) {
+      return Object.assign(p, {
+        style: 'height: 44px; border-radius: 22px; padding: 0 16px 0 12px; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; '
+          + (p.on ? 'background: #2A2A31; color: #F4F4F6; border: 2px solid #F4F4F6' : 'background: transparent; color: #A1A1AA; border: 2px solid #3A3A42')
+      });
+    });
+    var games = [
+      { name: '5 Crowns', rules: 'Lowest wins · rounds 3–13 · dealer shown', on: true },
+      { name: 'Dutch Blitz', rules: 'Highest wins · first to 100', on: false },
+      { name: 'Uno (house rules)', rules: 'Lowest wins · first to 500 ends it', on: false }
+    ].map(function (g, i) {
+      return Object.assign(g, {
+        border: i === 0 ? '0' : '1px solid #26262C',
+        radio: 'width: 22px; height: 22px; border-radius: 11px; box-sizing: border-box; flex-shrink: 0; '
+          + (g.on ? 'border: 7px solid #F4F4F6' : 'border: 2px solid #52525B')
+      });
+    });
+    return { people: people, games: games };
+  }
+}
+</script>
+</body>
+</html>

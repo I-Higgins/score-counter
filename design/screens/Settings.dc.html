@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 58px 16px 34px; display: flex; flex-direction: column; gap: 8px">
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px">
+    <a href="Phone.dc.html" aria-label="Back to game" style="width: 48px; height: 48px; border-radius: 24px; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 24px; font-weight: 800">Settings</h1>
+  </div>
+
+  <h2 style="margin: 4px 4px 0; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Look</h2>
+  <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 18px; padding: 4px 14px">
+    <sc-for list="{{segs}}" as="r" hint-placeholder-count="3">
+      <div role="group" aria-label="{{r.label}}" style="display: flex; flex-direction: column; gap: 6px; padding: 9px 0; border-top: {{r.border}}">
+        <span style="font-size: 15px; font-weight: 600">{{r.label}}</span>
+        <div style="display: flex; background: #0E0E11; border-radius: 12px; padding: 3px; gap: 3px">
+          <sc-for list="{{r.opts}}" as="o" hint-placeholder-count="4">
+            <button aria-pressed="{{o.on}}" style="{{o.style}}">{{o.text}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <h2 style="margin: 6px 4px 0; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Manage</h2>
+  <ul style="list-style: none; margin: 0; padding: 0; background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 18px; overflow: hidden">
+    <sc-for list="{{links}}" as="l" hint-placeholder-count="4">
+      <li style="border-top: {{l.border}}">
+        <a href="{{l.href}}" style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; color: #F4F4F6; text-decoration: none; font-size: 16px; font-weight: 600">
+          <span>{{l.text}}</span>
+          <span style="display: flex; align-items: center; gap: 6px; color: #A1A1AA; font-weight: 500; font-size: 15px">{{l.meta}}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+
+  <h2 style="margin: 6px 4px 0; font-size: 13px; font-weight: 600; color: #A1A1AA; letter-spacing: 0.04em; text-transform: uppercase">Your data stays on this phone</h2>
+  <div style="display: flex; gap: 8px">
+    <button style="flex: 1 1 0; height: 50px; border-radius: 16px; border: 0; background: #F4F4F6; color: #0E0E11; font-size: 16px; font-weight: 700">Back up to a file</button>
+    <button style="flex: 1 1 0; height: 50px; border-radius: 16px; border: 0; background: #1E1E23; color: #F4F4F6; font-size: 16px; font-weight: 600">Restore</button>
+  </div>
+  <span style="font-size: 13px; color: #A1A1AA; padding: 0 4px; line-height: 1.4">Last backup: never. Back up before changing phones or clearing Safari data.</span>
+
+  <div style="flex-grow: 1"></div>
+  <span style="font-size: 13px; color: #A1A1AA; text-align: center">Score Counter 1.0 · Free and open source (MIT) · No ads, no tracking</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var seg = function (texts, onIndex) {
+      return texts.map(function (t, i) {
+        var on = i === onIndex;
+        return { text: t, on: on ? 'true' : 'false',
+          style: 'flex: 1 1 0; height: 38px; border-radius: 9px; border: 0; font-size: 14px; font-weight: 700; ' + (on ? 'background: #F4F4F6; color: #0E0E11' : 'background: transparent; color: #C4C4CC') };
+      });
+    };
+    var segs = [
+      { label: 'Theme', opts: seg(['Auto', 'Dark', 'Light', 'High contrast'], 1) },
+      { label: 'Text size', opts: seg(['Standard', 'Large', 'Largest'], 0) },
+      { label: 'Re-sort after tapping', opts: seg(['Quick', 'Normal', 'Relaxed'], 1) }
+    ].map(function (r, i) { return Object.assign(r, { border: i === 0 ? '0' : '1px solid #26262C' }); });
+    var links = [
+      { text: 'Groups', meta: '2', href: 'Group.dc.html' },
+      { text: 'Games', meta: '3', href: 'GameEditor.dc.html' },
+      { text: 'Keep screen on during a game', meta: 'On', href: 'Settings.dc.html' },
+      { text: 'Privacy and help', meta: '', href: 'Settings.dc.html' }
+    ].map(function (l, i) { return Object.assign(l, { border: i === 0 ? '0' : '1px solid #26262C' }); });
+    return { segs: segs, links: links };
+  }
+}
+</script>
+</body>
+</html>
