@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<!-- Pinch zoom is off on purpose: accidental zooms confuse people with shaky hands.
+     The in-app Text size setting (up to Extra large) replaces it. See README → Accessibility. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>My Offline App</title>
+<meta name="description" content="A free app that works offline. Everything stays on your device.">
+<meta name="theme-color" content="#F4EFE7">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Offline App">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<!-- No external requests: everything comes from this site (and blob:/data: for local files). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<noscript><p style="padding:24px">This app needs JavaScript turned on.</p></noscript>
+</body>
+</html>

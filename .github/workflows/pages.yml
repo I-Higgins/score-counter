@@ -1,0 +1,58 @@
+name: Test and deploy to GitHub Pages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit tests (precache, versions, no external requests, settings, backup)
+        run: npm test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: End-to-end (Chromium + WebKit, iPad touch, offline, update, backup, accessibility)
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+
+  deploy:
+    needs: test
+    # Deploy from the default branch only.
+    if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the app files (design/, docs/, tests/ and scripts/ are not published)
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest sw.js css js assets icons _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
