@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Handoff: tokens and specs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+th,td{text-align:left;vertical-align:top}
+</style>
+</helmet>
+<div style="background: #0E0E11; color: #F4F4F6; min-height: 2500px; padding: 56px 24px 80px; box-sizing: border-box">
+<div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; font-size: 16px; line-height: 1.55">
+
+  <header style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #A1A1AA">Score Counter · for Claude Code</span>
+    <h1 style="margin: 0; font-size: 40px; line-height: 1.15; font-weight: 800">Handoff: tokens, components, behaviour</h1>
+    <p style="margin: 0; color: #C4C4CC; max-width: 720px">Put tokens in <code>css/tokens.css</code>. No hard-coded colours or sizes anywhere else. System font stack only. iPhone 390×844 is the reference; layouts are fluid from 320 to 1024 wide.</p>
+  </header>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">1. tokens.css</h2>
+    <pre style="margin: 0; background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 16px; padding: 20px; font: 14px/1.6 ui-monospace, Menlo, monospace; color: #E5E5EA; overflow-x: auto; white-space: pre">:root, [data-theme="dark"] {
+  --bg: #0E0E11;  --surface: #1A1A1F;  --surface-2: #2A2A31;  --chip: #1E1E23;
+  --line: #2C2C33; --line-soft: #26262C;
+  --text: #F4F4F6; --text-2: #C4C4CC;  --muted: #A1A1AA;      --link: #8AB4FF;
+  --primary-bg: #F4F4F6; --primary-text: #0E0E11; --danger: #FF9B9B;
+  --card-text: #121214;  --card-plate: rgba(18,18,20,.12); --card-border: none;
+  --neg-bg: #121214;     --neg-text: #FFB4B4;   --focus: #FFFFFF;
+}
+[data-theme="light"] {
+  --bg: #F4F3F0;  --surface: #FFFFFF;  --surface-2: #E6E4DF;  --chip: #E6E4DF;
+  --line: #DAD8D3; --line-soft: #E6E4DF;
+  --text: #18181B; --text-2: #3F3F46;  --muted: #55555D;      --link: #1D5FD1;
+  --primary-bg: #18181B; --primary-text: #FFFFFF; --danger: #B42318;
+  --card-border: 1px solid rgba(0,0,0,.14); --focus: #18181B;
+}
+[data-theme="contrast"] {
+  --bg: #000; --surface: #000; --surface-2: #000; --chip: #000;
+  --line: #FFF; --line-soft: #FFF; --text: #FFF; --text-2: #FFF; --muted: #FFF;
+  --link: #FFFF00; --primary-bg: #FFF; --primary-text: #000; --danger: #FF6B6B;
+  --card-border: 3px solid #FFF; --card-plate: transparent; /* plates get 2.5px #000 border */
+  --neg-bg: #000; --neg-text: #FFF; --focus: #FFFF00;
+}
+/* Player colours: same in every theme. Text on them is always --card-text. */
+--p-pink:#F37DB8 --p-orange:#F59A4A --p-yellow:#F2D35E --p-purple:#B98AF6
+--p-green:#9CD873 --p-teal:#6CCFB4 --p-blue:#6FB2F7 --p-coral:#F28A80
+--p-sand:#D9B38C --p-silver:#B8C2CC --p-lilac:#E3A6F0 --p-lime:#C6E36A
+
+--space-1:4px --space-2:8px --space-3:12px --space-4:16px --space-5:24px
+--radius-chip:24px --radius-card:20px --radius-sheet:28px --radius-key:14px --radius-btn:16px
+--motion-reorder:220ms cubic-bezier(.2,.8,.2,1)  --motion-fade:150ms ease-out
+--font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;</pre>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">2. Type scale (px) per text size</h2>
+    <table style="border-collapse: collapse; width: 100%; background: #1A1A1F; border-radius: 16px; overflow: hidden">
+      <thead><tr style="color: #A1A1AA; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em"><th style="padding: 12px 16px">Role</th><th style="padding: 12px 16px">Standard</th><th style="padding: 12px 16px">Large ×1.15</th><th style="padding: 12px 16px">Largest ×1.3</th><th style="padding: 12px 16px">Weight</th></tr></thead>
+      <tbody style="font-variant-numeric: tabular-nums">
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Score (normal / compact)</td><td style="padding: 10px 16px">36 / 30</td><td style="padding: 10px 16px">41 / 34</td><td style="padding: 10px 16px">47 / 39</td><td style="padding: 10px 16px">800, tabular</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Screen title</td><td style="padding: 10px 16px">24</td><td style="padding: 10px 16px">28</td><td style="padding: 10px 16px">31</td><td style="padding: 10px 16px">800</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Player name</td><td style="padding: 10px 16px">21</td><td style="padding: 10px 16px">24</td><td style="padding: 10px 16px">27</td><td style="padding: 10px 16px">700</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Primary button</td><td style="padding: 10px 16px">19</td><td style="padding: 10px 16px">22</td><td style="padding: 10px 16px">25</td><td style="padding: 10px 16px">700</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Body / list row</td><td style="padding: 10px 16px">16</td><td style="padding: 10px 16px">18</td><td style="padding: 10px 16px">21</td><td style="padding: 10px 16px">600</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Section label (caps)</td><td style="padding: 10px 16px">13</td><td style="padding: 10px 16px">15</td><td style="padding: 10px 16px">17</td><td style="padding: 10px 16px">600, +0.04em</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 10px 16px">Badge (Leading, Dealer)</td><td style="padding: 10px 16px">11</td><td style="padding: 10px 16px">13</td><td style="padding: 10px 16px">14</td><td style="padding: 10px 16px">700, caps</td></tr>
+      </tbody>
+    </table>
+    <p style="margin: 0; color: #C4C4CC">Implement as <code>--scale</code> on <code>:root</code> multiplied into every font size and into row heights. At Largest, the compact-rows threshold drops from 6 to 5 players.</p>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">3. Components</h2>
+    <table style="border-collapse: collapse; width: 100%; background: #1A1A1F; border-radius: 16px; overflow: hidden">
+      <thead><tr style="color: #A1A1AA; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em"><th style="padding: 12px 16px; width: 200px">Component</th><th style="padding: 12px 16px">Spec</th></tr></thead>
+      <tbody>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Player card</td><td style="padding: 12px 16px">84 high (64 compact), radius 20, padding 0 8 0 12, gap 8. Rank pill 28. Plates 52×64 (44×52 compact), radius 16. Score column 76 wide: total, then "+N this rd" (13/700) or empty. States: default, pressed (plate darkens to .22), leading badge, dealer or first-player badge (outlined), negative total (inverted pill), moved (2px --focus ring that fades over 600ms after a re-sort).</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Top bar</td><td style="padding: 12px 16px">48 round chips: Menu, Game/Group chip (fills), Sort, Undo, Add. Undo disabled at 40% opacity when there's nothing to undo.</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Round strip</td><td style="padding: 12px 16px">Surface card, radius 18. Hidden when the game has rounds off. Label comes from the game type: "N cards · X wild" or "Round N".</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">End round button</td><td style="padding: 12px 16px">60 high, radius 20, primary. Reads "End round N", or "End hand" when rounds are off. Pinned to the bottom safe area; the list scrolls above it.</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Round entry</td><td style="padding: 12px 16px">Full screen. Rows 52, selected row gets a 2px --text border. Keypad 3 columns, keys 56 high, gap 8: digits, ± and delete. Pre-fills each row with the amount tapped in so far this round. The last row's button reads "Save round".</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Segmented control</td><td style="padding: 12px 16px">Track --bg, padding 3, radius 12. Segments 38 high, radius 9. Selected uses primary colours. Real buttons with aria-pressed.</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Toast</td><td style="padding: 12px 16px">56 high, radius 18, primary colours, 16 from the edges above the bottom safe area, role=status. Stays 5s; Undo button 44 high.</td></tr>
+        <tr style="border-top: 1px solid #26262C"><td style="padding: 12px 16px; font-weight: 700">Sheet</td><td style="padding: 12px 16px">Radius 28 on top corners, grabber 40×5. Used for the shared-game import and delete confirmations.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">3b. Layouts and breakpoints</h2>
+    <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; color: #E5E5EA">
+      <li><strong>Phone portrait (under 600 wide):</strong> one column of cards, 84 high (64 compact at 6 or more players). End round pinned at the bottom. Artboard 1.</li>
+      <li><strong>Tablet portrait (600 wide and up, taller than wide):</strong> two-column grid of cards, 136 high, with 76×72 plates and 48 pt score, filling in reading order. A "This game so far" table sits below, and "Full table" plus "End round" pinned at the bottom. Artboards 15 and 16; round entry splits into a player list on the left and a 340-wide keypad on the right.</li>
+      <li><strong>Tablet landscape (wider than tall, 900 high or less):</strong> two-column card grid on the left, and a 340-wide sidebar on the right holding the round card, a players × rounds mini table and End round. Artboard 17.</li>
+      <li><strong>Phone landscape (450 high or less):</strong> a fallback, not a lock. Two columns of 64-high cards, with a 176-wide side rail for actions, round and End round. It respects the notch safe areas. Artboard 18.</li>
+      <li>Use <code>@media (orientation)</code> plus width and height queries, not user-agent sniffing. The manifest sets <code>"orientation": "portrait"</code> as a hint, but iOS ignores it, so every layout above must work.</li>
+    </ul>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">4. Behaviour rules</h2>
+    <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; color: #E5E5EA">
+      <li><strong>Sorting:</strong> by total plus this-round amount. Re-sort waits after the last tap: Quick 500ms, Normal 900ms (default), Relaxed 1500ms. Each tap restarts the timer, and no reorder happens while a finger is down.</li>
+      <li><strong>Reorder animation:</strong> FLIP translate at --motion-reorder, then the moved row gets a ring for 600ms. With reduced motion: no movement, rows swap in place and the ring fades in at --motion-fade.</li>
+      <li><strong>Rank:</strong> shared rank (1, 1, 3). "Leading" shows on every player tied for best, and is hidden when everyone is equal.</li>
+      <li><strong>Marker:</strong> dealer or first player moves one seat on each saved round, following the manual seat order, not the sort order.</li>
+      <li><strong>Game end:</strong> target reached (checked after saving a round), or the last round saved. Show the game-over screen; ties are shared wins.</li>
+      <li><strong>Save:</strong> write to IndexedDB on every change, with no save button. On launch, restore the exact screen and state, including a half-entered round.</li>
+      <li><strong>Undo:</strong> a stack of the last 50 changes within the current game, kept across relaunch.</li>
+      <li><strong>Update banner:</strong> held back while round entry is open.</li>
+      <li><strong>Keep screen on:</strong> Wake Lock while a game screen is visible; re-request it on visibilitychange. Fail silently.</li>
+    </ul>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">5. Data and sharing</h2>
+    <pre style="margin: 0; background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 16px; padding: 20px; font: 14px/1.6 ui-monospace, Menlo, monospace; color: #E5E5EA; overflow-x: auto; white-space: pre">Group     { id, name, players: [{ id, name, color, seat }], createdAt }
+GameType  { id, name, builtIn, winner: "high"|"low",
+            end: { kind: "target"|"lastRound"|"none", target? },
+            rounds: { show, start, end, label: "cardsWild"|"number" },
+            marker: "dealer"|"first"|"none", quick: [int] }
+Match     { id, groupId|null, game: GameType (snapshot), playerIds,
+            rounds: [{ n, scores: { [playerId]: int } }],
+            pending: { [playerId]: int }, markerSeat, startedAt, endedAt?, winnerIds? }
+Settings  (localStorage) { theme, textSize, sortDelay, keepAwake }
+
+Share link: https://&lt;user&gt;.github.io/score-counter/#game=&lt;base64url(JSON {v:1, game})&gt;
+  · the fragment never reaches the server · only the GameType, never ids, names or scores
+  · on import: validate schema, cap name at 40 chars, ints within ±100000, ≤8 quick buttons
+  · always ask before saving; a name clash adds alongside, never overwrites
+Backup file: score-counter-backup-YYYY-MM-DD.json, everything above plus a schema version.</pre>
+    <p style="margin: 0; color: #C4C4CC">Stats are derived from finished Matches. Never store them separately. A Quick game has groupId null and is excluded from stats.</p>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 24px; font-weight: 800">6. Follow exactly vs freedom</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <div style="flex: 1 1 320px; background: #1A1A1F; border-radius: 16px; padding: 18px 20px">
+        <h3 style="margin: 0 0 8px; font-size: 17px">Follow exactly</h3>
+        <ul style="margin: 0; padding-left: 20px; color: #E5E5EA"><li>Tokens, player palette, and dark text on every card</li><li>Touch targets of 44 or more; plate and key sizes</li><li>Sort timing, freeze-while-touching, shared rank</li><li>No reload mid-game; instant save; exact resume</li><li>Share link carries rules only, and always asks before importing</li></ul>
+      </div>
+      <div style="flex: 1 1 320px; background: #1A1A1F; border-radius: 16px; padding: 18px 20px">
+        <h3 style="margin: 0 0 8px; font-size: 17px">Freedom</h3>
+        <ul style="margin: 0; padding-left: 20px; color: #E5E5EA"><li>Icon stroke details and the exact menu layout</li><li>Copy tweaks, as long as they stay short and plain</li><li>Exact sidebar width in landscape (300–360 is fine)</li><li>Empty-state illustrations beyond first launch</li></ul>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

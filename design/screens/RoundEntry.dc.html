@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>End round: enter scores</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 58px 16px 34px; display: flex; flex-direction: column; gap: 12px; font-variant-numeric: tabular-nums">
+
+  <div style="display: flex; align-items: center; gap: 10px">
+    <a href="Phone.dc.html" aria-label="Cancel and go back" style="width: 48px; height: 48px; border-radius: 24px; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column; flex-grow: 1">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 800">End round 5</h1>
+      <span style="font-size: 13px; color: #A1A1AA">Enter each player’s score for this round</span>
+    </div>
+  </div>
+
+  <ol aria-label="Round scores" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+      <li>
+        <button onClick="{{r.pick}}" aria-label="{{r.aria}}" style="{{r.style}}">
+          <span style="width: 12px; height: 32px; border-radius: 6px; background: {{r.color}}; flex-shrink: 0"></span>
+          <span style="display: flex; flex-direction: column; align-items: flex-start; flex-grow: 1; min-width: 0">
+            <span style="font-size: 17px; font-weight: 700">{{r.name}}</span>
+            <span style="font-size: 12px; color: #A1A1AA">Total {{r.total}} → {{r.after}}</span>
+          </span>
+          <span style="font-size: 26px; font-weight: 800; min-width: 64px; text-align: right">{{r.value}}</span>
+        </button>
+      </li>
+    </sc-for>
+  </ol>
+
+  <div style="flex-grow: 1"></div>
+
+  <div role="group" aria-label="Number pad" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+      <button onClick="{{k.press}}" aria-label="{{k.aria}}" style="height: 56px; border-radius: 14px; border: 0; background: #2A2A31; color: #F4F4F6; font-size: 26px; font-weight: 600">{{k.label}}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{notLast}}" hint-placeholder-val="{{ true }}">
+    <button onClick="{{next}}" style="height: 60px; border-radius: 20px; border: 0; background: #F4F4F6; color: #0E0E11; font-size: 19px; font-weight: 700">Next: {{nextName}}</button>
+  </sc-if>
+  <sc-if value="{{isLast}}" hint-placeholder-val="{{ false }}">
+    <a href="Phone.dc.html" style="height: 60px; border-radius: 20px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; text-decoration: none">Save round · start round 6</a>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      players: [
+        { id: 'k', name: 'Rosa', color: '#F37DB8', total: 14, entry: '12' },
+        { id: 'i', name: 'Theo', color: '#F59A4A', total: 9, entry: '0' },
+        { id: 'm', name: 'Priya', color: '#F2D35E', total: 22, entry: '' },
+        { id: 't', name: 'Oscar', color: '#B98AF6', total: 9, entry: '' },
+        { id: 'h', name: 'Platypus', color: '#9CD873', total: -4, entry: '' }
+      ],
+      sel: 2
+    };
+  }
+  setEntry(fn) {
+    var sel = this.state.sel;
+    var players = this.state.players.map(function (p, i) { return i === sel ? Object.assign({}, p, { entry: fn(p.entry) }) : p; });
+    this.setState({ players: players });
+  }
+  renderVals() {
+    var s = this.state, self = this;
+    var rows = s.players.map(function (p, i) {
+      var n = p.entry === '' || p.entry === '-' ? 0 : parseInt(p.entry, 10);
+      var on = i === s.sel;
+      return {
+        name: p.name, color: p.color, total: p.total, after: p.total + n,
+        value: p.entry === '' ? '—' : p.entry.replace('-', '−'),
+        aria: p.name + ', round score ' + (p.entry === '' ? 'not entered' : p.entry) + (on ? ', editing' : ''),
+        style: 'width: 100%; height: 52px; border-radius: 14px; display: flex; align-items: center; gap: 12px; padding: 0 14px 0 10px; color: #F4F4F6; text-align: left; box-sizing: border-box; '
+          + (on ? 'background: #2A2A31; border: 2px solid #F4F4F6' : 'background: #1A1A1F; border: 2px solid transparent'),
+        pick: function () { self.setState({ sel: i }); }
+      };
+    });
+    var digit = function (d) { return function () { self.setEntry(function (e) { var v = (e === '0' ? '' : e) + d; return v.replace(/^(-?)0+(\d)/, '$1$2'); }); }; };
+    var keys = ['1','2','3','4','5','6','7','8','9'].map(function (d) { return { label: d, aria: d, press: digit(d) }; });
+    keys.push({ label: '±', aria: 'Make negative or positive', press: function () { self.setEntry(function (e) { return e.charAt(0) === '-' ? e.slice(1) : '-' + e; }); } });
+    keys.push({ label: '0', aria: '0', press: digit('0') });
+    keys.push({ label: '⌫', aria: 'Delete', press: function () { self.setEntry(function (e) { return e.slice(0, -1); }); } });
+    var last = s.sel >= s.players.length - 1;
+    return {
+      rows: rows, keys: keys, isLast: last, notLast: !last,
+      nextName: last ? '' : s.players[s.sel + 1].name,
+      next: function () { self.setState({ sel: Math.min(s.players.length - 1, s.sel + 1) }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

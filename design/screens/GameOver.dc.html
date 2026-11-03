@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Game over</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+th,td{padding:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 58px 16px 34px; display: flex; flex-direction: column; gap: 14px; font-variant-numeric: tabular-nums">
+
+  <div style="display: flex; align-items: center; gap: 14px; background: #F59A4A; color: #121214; border-radius: 22px; padding: 16px 18px">
+    <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4 4 5-7 5 7 4-4-2 12H5z"></path></svg>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800">Theo wins</h1>
+      <span style="font-size: 14px; font-weight: 600">73 points · lowest score wins</span>
+    </div>
+  </div>
+  <span style="font-size: 13px; color: #A1A1AA; padding: 0 4px">5 Crowns · Family · 11 rounds · Tue 4 Nov</span>
+
+  <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 18px; padding: 6px 8px; overflow-x: auto">
+    <table style="width: 100%; border-collapse: collapse; font-size: 15px">
+      <caption style="position: absolute; width: 1px; height: 1px; overflow: hidden">Round by round scores</caption>
+      <thead>
+        <tr style="height: 40px">
+          <th scope="col" style="text-align: left; color: #A1A1AA; font-size: 12px; font-weight: 600; width: 40px; padding-left: 6px">Rd</th>
+          <sc-for list="{{players}}" as="p" hint-placeholder-count="4">
+            <th scope="col" style="text-align: right; padding-right: 8px">
+              <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 700"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{p.color}}"></span>{{p.name}}</span>
+            </th>
+          </sc-for>
+        </tr>
+      </thead>
+      <tbody>
+        <sc-for list="{{rounds}}" as="r" hint-placeholder-count="11">
+          <tr style="height: 29px; border-top: 1px solid #26262C">
+            <th scope="row" style="text-align: left; color: #A1A1AA; font-size: 13px; font-weight: 600; padding-left: 6px">{{r.n}}</th>
+            <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="4">
+              <td style="{{c.style}}">{{c.v}}</td>
+            </sc-for>
+          </tr>
+        </sc-for>
+      </tbody>
+      <tfoot>
+        <tr style="height: 44px; border-top: 2px solid #F4F4F6">
+          <th scope="row" style="text-align: left; font-size: 13px; padding-left: 6px">Total</th>
+          <sc-for list="{{totals}}" as="t" hint-placeholder-count="4">
+            <td style="{{t.style}}">{{t.v}}</td>
+          </sc-for>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <span style="font-size: 13px; color: #A1A1AA; padding: 0 4px">Tap a round to fix a score · Swipe the table sideways for 5+ players</span>
+
+  <div style="flex-grow: 1"></div>
+  <a href="Phone.dc.html" style="height: 60px; border-radius: 20px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; text-decoration: none">Rematch · same players</a>
+  <a href="NewGame.dc.html" style="height: 52px; border-radius: 18px; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; text-decoration: none">New game</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var players = [
+      { name: 'Theo', color: '#F59A4A', s: [8,0,0,15,0,11,23,0,0,16,0] },
+      { name: 'Rosa', color: '#F37DB8', s: [0,12,5,0,18,7,0,22,9,0,14] },
+      { name: 'Oscar', color: '#B98AF6', s: [11,15,0,9,0,19,0,8,0,30,9] },
+      { name: 'Priya', color: '#F2D35E', s: [4,9,14,0,6,0,12,15,21,0,27] }
+    ];
+    var base = 'text-align: right; padding-right: 8px; ';
+    var rounds = [];
+    for (var r = 0; r < 11; r++) {
+      rounds.push({
+        n: r + 3,
+        cells: players.map(function (p) {
+          var v = p.s[r];
+          return { v: v === 0 ? '0' : v, style: base + (v === 0 ? 'color: #8B8B94' : 'color: #E5E5EA') };
+        })
+      });
+    }
+    var totals = players.map(function (p, i) {
+      var t = p.s.reduce(function (a, b) { return a + b; }, 0);
+      return { v: t, style: base + 'font-size: 18px; font-weight: 800; ' + (i === 0 ? 'color: #F59A4A' : 'color: #F4F4F6') };
+    });
+    return { players: players, rounds: rounds, totals: totals };
+  }
+}
+</script>
+</body>
+</html>

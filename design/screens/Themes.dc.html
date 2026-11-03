@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Themes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1330px; height: 844px; display: flex; gap: 80px; background: transparent; font-variant-numeric: tabular-nums">
+  <sc-for list="{{themes}}" as="t" hint-placeholder-count="3">
+    <div style="{{t.screen}}">
+      <span style="{{t.tag}}">{{t.name}}</span>
+      <div style="display: flex; gap: 8px; align-items: center">
+        <span style="{{t.chipRound}}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></span>
+        <span style="{{t.chipWide}}">5 Crowns</span>
+        <span style="{{t.chipRound}}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"></path></svg></span>
+        <span style="{{t.chipRound}}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
+      </div>
+      <div style="{{t.strip}}"><span style="font-size: 20px; font-weight: 700">Round 5</span><span style="{{t.muted}}">5 cards · 5s wild</span></div>
+      <sc-for list="{{t.rows}}" as="r" hint-placeholder-count="4">
+        <div style="{{r.card}}">
+          <span style="font-size: 21px; font-weight: 700; flex-grow: 1">{{r.name}}</span>
+          <span style="{{r.plate}}">−</span>
+          <span style="{{r.score}}">{{r.total}}</span>
+          <span style="{{r.plate}}">+</span>
+        </div>
+      </sc-for>
+      <div style="flex-grow: 1"></div>
+      <span style="{{t.primary}}">End round 5</span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1330,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var T = [
+      { name: 'Dark (default)', bg: '#0E0E11', chip: '#1E1E23', chipBorder: 'none', strip: '#1A1A1F', stripBorder: '1px solid #2C2C33', text: '#F4F4F6', muted: '#A1A1AA', pBg: '#F4F4F6', pText: '#0E0E11', cardBorder: 'none', plate: 'background: rgba(18,18,20,0.12); border: 0', negBg: '#121214', negText: '#FFB4B4' },
+      { name: 'Light', bg: '#F4F3F0', chip: '#E6E4DF', chipBorder: 'none', strip: '#FFFFFF', stripBorder: '1px solid #DAD8D3', text: '#18181B', muted: '#55555D', pBg: '#18181B', pText: '#FFFFFF', cardBorder: '1px solid rgba(0,0,0,0.14)', plate: 'background: rgba(18,18,20,0.12); border: 0', negBg: '#121214', negText: '#FFB4B4' },
+      { name: 'High contrast', bg: '#000000', chip: '#000000', chipBorder: '2px solid #FFFFFF', strip: '#000000', stripBorder: '2px solid #FFFFFF', text: '#FFFFFF', muted: '#FFFFFF', pBg: '#FFFFFF', pText: '#000000', cardBorder: '3px solid #FFFFFF', plate: 'background: transparent; border: 2.5px solid #000000', negBg: '#000000', negText: '#FFFFFF' }
+    ];
+    var people = [['Platypus', '#9CD873', -4], ['Theo', '#F59A4A', 9], ['Rosa', '#F37DB8', 14], ['Priya', '#F2D35E', 22]];
+    var themes = T.map(function (t) {
+      var chip = 'height: 48px; border-radius: 24px; background: ' + t.chip + '; border: ' + t.chipBorder + '; color: ' + t.text + '; display: flex; align-items: center; box-sizing: border-box; ';
+      return {
+        name: t.name,
+        screen: 'width: 390px; height: 844px; box-sizing: border-box; border-radius: 0; background: ' + t.bg + '; color: ' + t.text + '; padding: 20px 16px 34px; display: flex; flex-direction: column; gap: 12px',
+        tag: 'font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: ' + t.muted + '; height: 26px',
+        chipRound: chip + 'width: 48px; justify-content: center; flex-shrink: 0',
+        chipWide: chip + 'flex-grow: 1; padding: 0 14px; font-size: 16px; font-weight: 700',
+        strip: 'border-radius: 18px; background: ' + t.strip + '; border: ' + t.stripBorder + '; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center',
+        muted: 'font-size: 15px; font-weight: 600; color: ' + t.muted,
+        primary: 'height: 60px; border-radius: 20px; background: ' + t.pBg + '; color: ' + t.pText + '; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700',
+        rows: people.map(function (p) {
+          var neg = p[2] < 0;
+          return {
+            name: p[0], total: neg ? '−' + Math.abs(p[2]) : p[2],
+            card: 'background: ' + p[1] + '; color: #121214; border: ' + t.cardBorder + '; border-radius: 20px; height: 84px; padding: 0 8px 0 18px; display: flex; align-items: center; gap: 8px; box-sizing: border-box',
+            plate: 'width: 52px; height: 64px; border-radius: 16px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 500; ' + t.plate,
+            score: neg
+              ? 'width: 76px; text-align: center; font-size: 30px; font-weight: 800; background: ' + t.negBg + '; color: ' + t.negText + '; border-radius: 10px; padding: 3px 0'
+              : 'width: 76px; text-align: center; font-size: 36px; font-weight: 800'
+          };
+        })
+      };
+    });
+    return { themes: themes };
+  }
+}
+</script>
+</body>
+</html>
