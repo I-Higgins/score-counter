@@ -1,0 +1,100 @@
+/* Score Counter design tokens (Claude Design, screen 14 · Handoff).
+   Drop-in replacement for css/tokens.css: keeps every token name the template's
+   shared components (ui.js, settings, dialogs) already use, and adds the
+   score-counter ones below. Reference only: design/ is never served.
+   Note: this app's default theme is dark (set APP_DEFAULTS.theme = "dark"). */
+
+:root{
+  /* Light theme (base) */
+  --bg:#F4F3F0; --surface:#FFFFFF; --surface-2:#E6E4DF;
+  --ink:#18181B; --ink-2:#3F3F46; --muted:#55555D; --line:#DAD8D3; --line-soft:#E6E4DF;
+  --accent:#18181B; --accent-press:#000000; --on-accent:#FFFFFF;
+  --danger:#B42318; --focus:#18181B; --link:#1D5FD1;
+  --control-off:#8E8E96; --knob:#FFFFFF; --input-bg:#FFFFFF;
+  --chip-bg:#E6E4DF; --chip-ink:#18181B;
+  --scrim:rgba(0,0,0,.45);
+  --shadow-card:none;
+  --shadow-dialog:0 24px 64px rgba(0,0,0,.30);
+  --shadow-knob:0 1px 3px rgba(0,0,0,.3);
+  --card-border:1px solid rgba(0,0,0,.14);
+  --border-w:2px;
+
+  /* Player cards (all themes): dark text on every player colour */
+  --card-ink:#121214;
+  --card-plate:rgba(18,18,20,.12); --card-plate-press:rgba(18,18,20,.22); --card-plate-border:0px solid transparent;
+  --card-pill:rgba(18,18,20,.14);
+  --neg-bg:#121214; --neg-ink:#FFB4B4;
+  --badge-bg:#121214; --badge-ink:#F4F4F6;
+
+  /* Player colours: identical in every theme */
+  --p-pink:#F37DB8; --p-orange:#F59A4A; --p-yellow:#F2D35E; --p-purple:#B98AF6;
+  --p-green:#9CD873; --p-teal:#6CCFB4; --p-blue:#6FB2F7; --p-coral:#F28A80;
+  --p-sand:#D9B38C; --p-silver:#B8C2CC; --p-lilac:#E3A6F0; --p-lime:#C6E36A;
+
+  /* Type: system fonts only */
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --fs-badge:11px; --fs-label:13px; --fs-small:15px; --fs-body:16px;
+  --fs-button:19px; --fs-name:21px; --fs-title:24px; --fs-heading:30px;
+  --fs-score:36px; --fs-score-compact:30px; --fs-score-tablet:48px; --fs-key:26px;
+
+  /* Spacing, shape, touch targets */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
+  --radius-sm:12px; --radius-md:16px; --radius-lg:20px; --radius-xl:24px; --radius-sheet:28px;
+  --tap-min:44px; --tap-helper:48px; --tap-player:60px; --tap-main:72px;
+  --row-h:84px; --row-h-compact:64px; --row-h-tablet:136px;
+  --plate-w:52px; --plate-h:64px; --plate-w-tablet:76px; --plate-h-tablet:72px;
+  --key-h:56px; --key-h-tablet:84px; --primary-h:60px;
+
+  /* Motion */
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --dur-press:200ms; --dur-fade:150ms; --dur-overlay:320ms;
+  --dur-reorder:220ms; --dur-moved-ring:600ms;
+  --sort-delay-quick:500ms; --sort-delay-normal:900ms; --sort-delay-relaxed:1500ms;
+}
+
+[data-theme="dark"]{
+  --bg:#0E0E11; --surface:#1A1A1F; --surface-2:#2A2A31;
+  --ink:#F4F4F6; --ink-2:#C4C4CC; --muted:#A1A1AA; --line:#2C2C33; --line-soft:#26262C;
+  --accent:#F4F4F6; --accent-press:#FFFFFF; --on-accent:#0E0E11;
+  --danger:#FF9B9B; --focus:#FFFFFF; --link:#8AB4FF;
+  --control-off:#3A3A42; --input-bg:#1A1A1F;
+  --chip-bg:#1E1E23; --chip-ink:#F4F4F6;
+  --scrim:rgba(0,0,0,.6);
+  --shadow-dialog:0 24px 64px rgba(0,0,0,.6);
+  --card-border:0px solid transparent;
+}
+
+/* High contrast is white-on-black in this app (the template's default is black-on-white). */
+[data-theme="contrast"]{
+  --bg:#000000; --surface:#000000; --surface-2:#000000;
+  --ink:#FFFFFF; --ink-2:#FFFFFF; --muted:#FFFFFF; --line:#FFFFFF; --line-soft:#FFFFFF;
+  --accent:#FFFFFF; --accent-press:#FFFFFF; --on-accent:#000000;
+  --danger:#FF6B6B; --focus:#FFFF00; --link:#FFFF00;
+  --control-off:#FFFFFF; --input-bg:#000000;
+  --chip-bg:#000000; --chip-ink:#FFFFFF;
+  --scrim:rgba(0,0,0,.8);
+  --shadow-card:none; --shadow-dialog:none; --shadow-knob:0 0 0 2px #000000;
+  --card-border:3px solid #FFFFFF;
+  --card-plate:transparent; --card-plate-press:rgba(0,0,0,.2); --card-plate-border:2.5px solid #000000;
+  --neg-bg:#000000; --neg-ink:#FFFFFF;
+  --border-w:3px;
+}
+
+/* Text sizes: Standard / Large (×1.15) / Largest (×1.3). Rows grow with text. */
+[data-text="large"]{
+  --fs-badge:13px; --fs-label:15px; --fs-small:17px; --fs-body:18px;
+  --fs-button:22px; --fs-name:24px; --fs-title:28px; --fs-heading:35px;
+  --fs-score:41px; --fs-score-compact:34px; --fs-score-tablet:55px; --fs-key:30px;
+  --row-h:96px; --row-h-compact:74px; --row-h-tablet:156px;
+}
+[data-text="xl"]{
+  --fs-badge:14px; --fs-label:17px; --fs-small:20px; --fs-body:21px;
+  --fs-button:25px; --fs-name:27px; --fs-title:31px; --fs-heading:39px;
+  --fs-score:47px; --fs-score-compact:39px; --fs-score-tablet:62px; --fs-key:34px;
+  --row-h:109px; --row-h-compact:84px; --row-h-tablet:177px;
+}
+
+@media (prefers-reduced-motion:reduce){
+  :root{ --dur-press:0ms; --dur-fade:150ms; --dur-overlay:0ms; --dur-reorder:0ms; }
+}

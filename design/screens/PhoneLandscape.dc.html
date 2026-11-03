@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Scoreboard (iPhone landscape)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:#8AB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; background: #0E0E11; color: #F4F4F6; padding: 16px 52px 20px; display: flex; gap: 12px; font-variant-numeric: tabular-nums">
+
+  <ol aria-label="Players" style="list-style: none; margin: 0; padding: 0; flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 64px; gap: 8px; align-content: start">
+    <sc-for list="{{players}}" as="p" hint-placeholder-count="6">
+      <li style="background: {{p.color}}; color: #121214; border-radius: 16px; padding: 0 6px 0 10px; display: flex; align-items: center; gap: 6px; box-sizing: border-box">
+        <span style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 12px; background: rgba(18,18,20,0.14); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">{{p.rank}}</span>
+        <span style="font-size: 17px; font-weight: 700; flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.name}}</span>
+        <button aria-label="Minus one for {{p.name}}" style="width: 44px; height: 52px; flex-shrink: 0; border-radius: 12px; border: 0; background: rgba(18,18,20,0.12); color: #121214; font-size: 26px">−</button>
+        <span style="{{p.totalStyle}}">{{p.total}}</span>
+        <button aria-label="Plus one for {{p.name}}" style="width: 44px; height: 52px; flex-shrink: 0; border-radius: 12px; border: 0; background: rgba(18,18,20,0.12); color: #121214; font-size: 26px">+</button>
+      </li>
+    </sc-for>
+  </ol>
+
+  <aside style="width: 176px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px">
+    <div style="display: flex; gap: 6px">
+      <button aria-label="Menu" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+      <button aria-label="Undo last change" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>
+      </button>
+      <button aria-label="Add player" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #1E1E23; color: #F4F4F6; display: flex; align-items: center; justify-content: center">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </button>
+    </div>
+    <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 18px; font-weight: 800">Round 5 <span style="color: #A1A1AA; font-weight: 600">of 13</span></span>
+      <span style="font-size: 13px; color: #E5E5EA; font-weight: 600">5s wild · Marlies deals</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <a href="RoundEntry.dc.html" style="height: 52px; border-radius: 16px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; text-decoration: none">End round 5</a>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var raw = [['Hedgehog', '#9CD873', -4], ['Isaac', '#F59A4A', 9], ['Martin', '#B98AF6', 9], ['Kerryn', '#F37DB8', 14], ['Marlies', '#F2D35E', 22], ['Panda', '#6CCFB4', 28]];
+    var rank = 0, prev = null;
+    var players = raw.map(function (p, i) {
+      if (p[2] !== prev) { rank = i + 1; prev = p[2]; }
+      var neg = p[2] < 0;
+      return { name: p[0], color: p[1], rank: rank, total: neg ? '−' + Math.abs(p[2]) : p[2],
+        totalStyle: 'width: 52px; flex-shrink: 0; text-align: center; font-weight: 800; ' + (neg ? 'font-size: 22px; background: #121214; color: #FFB4B4; border-radius: 8px; padding: 2px 0' : 'font-size: 28px') };
+    });
+    return { players: players };
+  }
+}
+</script>
+</body>
+</html>
