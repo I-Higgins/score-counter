@@ -1,61 +1,63 @@
-# My Offline App
+# Score Counter
 
-A starting point for small, free web apps that **work offline**, **install to an iPad or iPhone home screen**, and **keep everything on the device**. No accounts, no ads, no tracking.
+A free, ad-free score counter for card and board games. It works offline, installs to your iPhone or iPad Home Screen, and keeps everything on your device.
 
-Built from the shared parts of [Word Search](https://github.com/I-Higgins/word-search) and [Photo Pairs](https://github.com/I-Higgins/photo-memory-game).
+**Live:** https://i-higgins.github.io/score-counter/
 
-## What you get
-- **Offline PWA shell:** cache-first service worker that precaches every file, a test that fails if one is missed, and a gentle "A new version is ready — Tap to refresh" banner that never reloads mid-task.
-- **Install card** shown only in a normal Safari tab, with the three Add to Home Screen steps.
-- **Settings:** text size (Normal / Large / Extra large), Light / Dark / High contrast (following the system until chosen), sound, and **Back up / Restore** to a single file.
-- **Local storage:** IndexedDB collections (`js/store.js`) for anything precious, localStorage for small settings, and a backup that includes everything, binary data too.
-- **Accessible UI pieces:** dialogs with focus handling, switches, segmented controls, a polite live region, 44 px+ touch targets, safe-area padding, reduced motion.
-- **Tests:** unit tests for the offline guarantee and the "no external requests, no tracking" rules; end-to-end tests in Chromium and WebKit at iPad size with touch, covering offline use, updates, backup/restore and an automatic accessibility (axe) scan in every theme and text size.
-- **GitHub Actions:** test on every push, deploy to GitHub Pages from the default branch.
-- **`CLAUDE.md`:** the rules and lessons learned, so a Claude Code session builds the next app the same way.
-- An **example home screen** (a simple saved list) showing the patterns. Replace it with your app.
+![Score Counter on iPhone: a 5 Crowns game, round 5 of 13](docs/screenshot.png)
 
-## Make a new app from this template
-1. On GitHub, click **Use this template → Create a new repository**. Make it **public**. The new repo's default branch is `master`, like this one; keep it that way.
-2. Clone it, then:
-   ```sh
-   npm install
-   npx playwright install chromium webkit
-   npm run rename -- "Tide Times" tide-times   # name, then a lower-case id you'll never change
-   ```
-3. Put your Claude Design export in `design/`, replace `assets/app/app-icon*.svg` with your icon, then `npm run icons`.
-4. Build your screens (start a Claude Code session and paste `docs/BASE-PROMPT.md` plus your idea, or your approved brief).
-5. `npm run precache`, `npm test`, `npm run test:e2e`.
-6. Push. In the repo's **Settings → Pages**, set **Source** to **GitHub Actions** if it isn't already. The workflow deploys to `https://<you>.github.io/<repo>/`.
+## What it does
+- **Always shows grand totals.** Tap + and − during a round to build each player's "this round" amount under their total. **End round** opens a keypad to check each score, then saves the round.
+- **Sorts itself** (lowest first, highest first or manual). It waits a moment after your last tap and never moves a row while your finger is on the screen. Tied players share a rank (1, 1, 3).
+- **Built-in games:** 5 Crowns (rounds 3–13, wild card and dealer shown, lowest wins) and Dutch Blitz (highest wins, first to 100; change the target in the game's settings).
+- **Your own games:** high or low wins, end at a target, after the last round or never, round range and label, quick buttons, and dealer or first-player marker. You can create, edit, duplicate and delete them.
+- **Groups and stats:** groups you make (like Family) keep every finished game. Stats show wins, win %, average and best, for all games or one game. Ties are shared wins. Quick games aren't counted.
+- **History:** a round-by-round table for every game. Tap a round number to fix a score.
+- **Sharing:** share a game's *rules* as a link or a file. Opening one always asks before adding it.
+- **Never loses your place:** everything saves as you tap. Closing the app, even halfway through entering a round, brings you back exactly where you were. Undo still works after relaunching.
+- Negative totals are highlighted, rows go compact at 6+ players, the screen stays on during a game, and you can back up and restore everything.
 
-## Commands
+## Installing on iPhone or iPad
+1. Open **https://i-higgins.github.io/score-counter/** in **Safari**.
+2. Tap **Share**, then **Add to Home Screen**.
+3. Open it **once from the Home Screen icon while online**. It saves itself for offline use.
+4. From then on it works with no internet, even in aeroplane mode. Always use the Home Screen icon: **Home Screen apps keep their own data, separate from Safari tabs**, so games played in a Safari tab won't appear in the installed app (back up in the tab and restore in the app if you need to move them).
+
+## Backing up
+Everything is stored on the device only. Deleting the app or clearing Safari's website data deletes it too, and there's no account to get it back from. Use **Settings → Back up to a file** now and then and keep the file somewhere safe, like iCloud Drive. **Restore** adds the backup's groups, games and history back, and restoring twice never duplicates anything.
+
+## Sharing a game
+In a game's settings, tap **Share**. The link looks like `…/score-counter/#game=…`. The rules are encoded after the `#`, which browsers never send to a server. The link holds only the rules: no players, scores or history. Opening it on another phone (with the app installed once) shows the rules and asks before adding. A game with the same name is added alongside, never replaced.
+
+## Guided Access tip
+If a child is keeping score and might leave the app by accident, turn on **Settings → Accessibility → Guided Access**, open Score Counter, then triple-click the side (or Home) button.
+
+## Privacy
+Nothing leaves the device. There's no server, account, analytics, tracking, ads or in-app purchases, and the Content-Security-Policy blocks requests to other sites.
+
+## Accessibility
+Aims for WCAG 2.2 AA. It has Dark (the default), Light and High contrast themes, three text sizes, 44 px or larger touch targets, screen-reader labels and reduced motion. Pinch zoom is off on purpose, because accidental zooms mid-game are confusing; the Text size setting replaces it.
+
+## Running it locally
+```sh
+npm install
+npx playwright install chromium webkit
+npm start                 # http://localhost:8080
+npm test                  # unit tests (game logic, sharing, stats, offline precache, rules)
+npm run test:e2e          # Chromium + WebKit: full games, resume, sharing, offline, backup, accessibility
+npm run screenshots       # every screen × iPhone/iPad × portrait/landscape × theme, into screenshots/
+```
+
 | Command | What it does |
 | --- | --- |
-| `npm start` | Serve locally on http://localhost:8080 (`BASE=/repo/ npm start` to test a Pages subpath) |
-| `npm run rename -- "Name" id` | Set the app's name and id everywhere |
-| `npm run precache` | Update the service worker's file list (after adding or removing files) |
+| `npm start` | Serve locally (`BASE=/score-counter/ npm start` to test the Pages subpath) |
+| `npm run precache` | Update the service worker's file list after adding or removing files |
 | `npm run icons` | Make the icon PNGs from `assets/app/*.svg` |
-| `npm test` | Unit tests |
-| `npm run test:e2e` | End-to-end tests (Chromium and WebKit; `E2E_BROWSERS=chromium` for one) |
-| `npm run screenshots` | Screenshots of every screen, size and theme into `screenshots/` |
 
 **Releasing:** bump `APP_VERSION` in `js/config.js` and `VERSION` in `sw.js` together (a test checks), or installed devices keep the old version.
 
-## Installing on iPad (copy this section into each app's README)
-1. Open the app's link in **Safari**.
-2. Tap **Share**, then **Add to Home Screen**.
-3. Open it **once from the Home Screen icon while on Wi-Fi**. It saves itself for offline use.
-4. From then on it works with no internet. Use it from the Home Screen icon: home-screen apps keep their own data, separate from Safari tabs.
-
-**Back up:** everything is stored on the device only. Deleting the app or clearing website data deletes it too. Use **Settings → Back up** and keep the file somewhere safe, like iCloud Drive.
-
-**Guided Access (optional):** to keep someone in the app, turn on **Settings → Accessibility → Guided Access**, open the app, then triple-click the top (or Home) button.
-
-## Accessibility
-Aims for WCAG 2.2 AA (high contrast theme for AAA contrast). Pinch zoom is turned off deliberately, because accidental zooms confuse people with shaky hands; the Text size setting (up to Extra large) replaces it. If your audience is different, you can turn pinch zoom back on in `index.html`.
-
-## Privacy
-Nothing leaves the device. There's no server, account, analytics or tracking, and the Content-Security-Policy blocks requests to other sites.
+## How it's built
+Vanilla HTML, CSS and JavaScript (ES modules). There's no framework, build step or runtime dependencies. It started from [offline-app-template](https://github.com/I-Higgins/offline-app-template); the design is in `design/` (a Claude Design export, reference only). Game logic is in `js/model.js` and is unit-tested. Data is in IndexedDB via `js/data.js`.
 
 ## Licence
 MIT. Free for anyone to use.

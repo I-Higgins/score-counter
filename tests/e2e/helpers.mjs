@@ -93,3 +93,59 @@ export async function smallTargets(page) {
     .filter(({ r }) => r.width < 44 || r.height < 44)
     .map(({ e, r }) => `${e.tagName.toLowerCase()} "${(e.textContent || e.getAttribute('aria-label') || '').trim().slice(0, 30)}" ${Math.round(r.width)}×${Math.round(r.height)}`));
 }
+
+// ---------- Score Counter flows ----------
+
+/** From first launch (or anywhere): start a quick game with these names and a game. */
+export async function quickGame(page, baseUrl, names, game = '5 Crowns') {
+  await page.goto(baseUrl + '#/new/quick');
+  await page.waitForSelector('[data-start]');
+  for (const n of names) {
+    await page.fill('#qa-in', n);
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+  }
+  await page.locator('.game-row', { hasText: game }).first().click();
+  await page.locator('[data-start]').click();
+  await page.waitForSelector('.sc-list .card');
+}
+
+/** Create a group with players, from anywhere. Returns its id. */
+export async function makeGroup(page, baseUrl, name, players) {
+  await page.goto(baseUrl + '#/group/new/edit');
+  await page.waitForSelector('#grname');
+  await page.fill('#grname', name);
+  for (const p of players) {
+    await page.fill('#gp-in', p);
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+  }
+  await page.getByRole('button', { name: 'Create group' }).click();
+  await page.waitForSelector('[data-start]');
+  return page.evaluate(() => location.hash.split('group-')[1]);
+}
+
+/** Type digits for one row with the keypad (negative numbers allowed). */
+export async function typeScore(page, n) {
+  const s = String(Math.abs(n));
+  for (const d of s) await page.locator(`.keypad [data-k="${d}"]`).click();
+  if (n < 0) await page.locator('.keypad [data-k="±"]').click();
+}
+
+/** End the round, entering scores by player name ({ Ann: 5 }), then save. */
+export async function playRound(page, scores) {
+  await page.locator('[data-end]').click();
+  await page.waitForSelector('.keypad');
+  const rows = page.locator('.re-row');
+  const count = await rows.count();
+  for (let i = 0; i < count; i++) {
+    const name = (await rows.nth(i).locator('strong').textContent()).trim();
+    if (!(await rows.nth(i).evaluate((e) => e.classList.contains('on')))) await rows.nth(i).click();
+    if (name in scores) await typeScore(page, scores[name]);
+    await page.locator('[data-next]').click();
+  }
+  await page.waitForFunction(() => !document.querySelector('.keypad'));
+}
+
+/** Names in display order on the scoreboard. */
+export function order(page) {
+  return page.locator('.sc-list .c-name').allTextContents();
+}

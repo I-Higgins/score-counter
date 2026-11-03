@@ -3,7 +3,7 @@
 // IndexedDB / localStorage.
 // APP_ID and VERSION must match js/config.js (a unit test checks). Bump VERSION
 // for every release, or devices keep the old files.
-const APP_ID = 'my-offline-app';
+const APP_ID = 'score-counter';
 const VERSION = '0.1.0';
 const CACHE = `${APP_ID}-${VERSION}`;
 
@@ -22,13 +22,26 @@ const PRECACHE = [
   'js/app.js',
   'js/backup.js',
   'js/config.js',
+  'js/data.js',
   'js/icons.js',
+  'js/model.js',
   'js/pwa.js',
+  'js/screens/common.js',
+  'js/screens/game-edit.js',
+  'js/screens/games.js',
+  'js/screens/groups.js',
   'js/screens/home.js',
+  'js/screens/import.js',
+  'js/screens/match.js',
+  'js/screens/new-game.js',
+  'js/screens/player.js',
+  'js/screens/round.js',
+  'js/screens/score.js',
   'js/screens/settings-screen.js',
   'js/settings.js',
   'js/store.js',
   'js/ui.js',
+  'js/wake.js',
   'js/zip.js',
   'manifest.webmanifest',
 ];
