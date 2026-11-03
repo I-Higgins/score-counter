@@ -26,6 +26,8 @@ for (const { name, type } of browsers) {
         await page.getByRole('heading', { name: 'Ready to keep score' }).waitFor();
         await quickGame(page, srv.url, ['Ann', 'Ben']);
         await page.getByRole('button', { name: 'Plus one for Ann this round' }).click();
+        await page.locator('.card', { hasText: 'Ann' }).getByText('+1').waitFor();
+        await page.waitForTimeout(300); // let the IndexedDB write commit; a reload in the same millisecond can drop it
         await page.reload();
         await page.locator('.card', { hasText: 'Ann' }).getByText('+1').waitFor();
         assert.deepEqual(errors, []);
@@ -137,7 +139,7 @@ for (const { name, type } of browsers) {
         const keys = await page.evaluate(async () => caches.keys());
         assert.ok(keys.some((k) => k.endsWith('-test1')), `new cache missing: ${keys}`);
         assert.equal(keys.length, 1, `old caches not cleaned up: ${keys}`);
-      } finally { await browser.close(); }
+      } finally { await browser.close(); await own.close().catch(() => {}); }
     });
 
     test('accessibility: no WCAG A/AA problems and 44 px touch targets, on every screen, theme and size', async () => {

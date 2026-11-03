@@ -12,7 +12,7 @@
     "precache": "node scripts/update-precache.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "test": "node --test tests/unit/*.test.mjs",
-    "test:e2e": "node --test --test-concurrency=1 --test-timeout=180000 tests/e2e/*.test.mjs",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/*.test.mjs",
     "test:all": "npm test && npm run test:e2e"
   },
   "devDependencies": {

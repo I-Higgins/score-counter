@@ -66,6 +66,11 @@ export async function waitForServiceWorker(page) {
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
 }
 
+/** Wait for running animations (sheets sliding in, toasts) so checks see the settled page. */
+export async function settle(page) {
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
+}
+
 const require = createRequire(import.meta.url);
 const AXE = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
@@ -74,6 +79,7 @@ const AXE = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
  * meta-viewport is off on purpose: pinch zoom is replaced by the in-app Text size setting.
  */
 export async function axe(page) {
+  await settle(page);
   // evaluate (not a <script> tag) so the app's strict Content-Security-Policy stays on.
   if (!(await page.evaluate(() => !!window.axe))) await page.evaluate(AXE);
   return page.evaluate(async () => {
@@ -87,6 +93,7 @@ export async function axe(page) {
 
 /** Every visible button, link, input and switch is at least 44×44 CSS px. */
 export async function smallTargets(page) {
+  await settle(page);
   return page.evaluate(() => [...document.querySelectorAll('button, a[href], input:not([type=hidden]), [role=switch], [role=radio]')]
     .filter((e) => e.offsetParent !== null && !e.closest('.sr-only'))
     .map((e) => ({ e, r: e.getBoundingClientRect() }))
