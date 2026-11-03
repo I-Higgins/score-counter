@@ -429,7 +429,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
   animation: toast-in var(--dur-fade) ease-out; /* slides, never fades: always full contrast */
 }
 .toast span { flex: 1 1 auto; }
-.toast-btn { min-height: var(--tap-min); padding: 0 16px; border-radius: 12px; border: 2px solid currentColor; background: transparent; color: inherit; font-weight: 700; }
+.toast-btn { min-height: var(--tap-helper); padding: 0 16px; border-radius: 12px; border: 2px solid currentColor; background: transparent; color: inherit; font-weight: 700; }
 .banner {
   position: fixed; z-index: 60; left: 50%; transform: translateX(-50%);
   top: calc(8px + env(safe-area-inset-top)); width: min(560px, calc(100% - 32px));
