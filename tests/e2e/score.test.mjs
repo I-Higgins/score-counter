@@ -111,6 +111,7 @@ for (const { name, type } of browsers) {
         await page.waitForSelector('.keypad');
         await page.locator('.re-row', { hasText: 'Ben' }).click();
         await typeScore(page, -12);
+        await page.waitForTimeout(300); // a real force-quit is never within a few ms of the last tap
 
         // "Force-quit": a brand new page from the Home Screen start URL (no #).
         const url = srv.url;
