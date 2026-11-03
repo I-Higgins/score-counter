@@ -2,10 +2,9 @@
 // and persistent-storage requests.
 //
 // Updates never interrupt the person: the new worker waits until they tap
-// "Tap to refresh". Screens where even the banner would be a distraction
+// "Refresh". Screens where even the banner would be a distraction
 // (mid-game, mid-form) call setUpdateBannerAllowed(false) and true again after.
 import { el } from './ui.js';
-import { icon } from './icons.js';
 
 export function isStandalone() {
   return (typeof navigator !== 'undefined' && navigator.standalone === true) ||
@@ -15,6 +14,7 @@ export function isStandalone() {
 let waitingWorker = null;
 let bannerAllowed = true;
 let updateAccepted = false;
+let laterUntil = 0; // "Later" hides the banner for a while
 
 export function setUpdateBannerAllowed(on) {
   bannerAllowed = on;
@@ -27,7 +27,7 @@ export function registerServiceWorker() {
   if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // Only ever happens after the person tapped "Tap to refresh".
+    // Only ever happens after the person tapped "Refresh".
     if (refreshing || !updateAccepted) return;
     refreshing = true;
     location.reload();
@@ -51,12 +51,13 @@ export function registerServiceWorker() {
 
 function showUpdate(worker) {
   waitingWorker = worker;
-  if (!bannerAllowed || document.querySelector('.banner')) return;
+  if (!bannerAllowed || Date.now() < laterUntil || document.querySelector('.banner')) return;
   const b = el(`<div class="banner" role="status">
-    ${icon('refresh', 30)}
-    <span>A new version is ready</span>
-    <button type="button" class="btn">Tap to refresh</button></div>`);
-  b.querySelector('button').addEventListener('click', () => {
+    <span class="banner-text"><strong>Update ready</strong><span>Your game is saved</span></span>
+    <button type="button" class="btn banner-later">Later</button>
+    <button type="button" class="btn banner-go">Refresh</button></div>`);
+  b.querySelector('.banner-later').addEventListener('click', () => { laterUntil = Date.now() + 30 * 60 * 1000; b.remove(); });
+  b.querySelector('.banner-go').addEventListener('click', () => {
     updateAccepted = true;
     if (waitingWorker) waitingWorker.postMessage({ type: 'SKIP_WAITING' });
     else location.reload();

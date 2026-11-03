@@ -13,7 +13,12 @@ const SHARED_DEFAULTS = {
 };
 
 // ↓ Your app's settings go here.
-const APP_DEFAULTS = {};
+const APP_DEFAULTS = {
+  theme: 'dark', // this app's default theme is dark (null = Auto)
+  sortDelay: 'normal', // quick | normal | relaxed
+  keepAwake: true,
+};
+export const SORT_DELAYS = { quick: 500, normal: 900, relaxed: 1500 };
 
 export const DEFAULTS = Object.freeze({ ...SHARED_DEFAULTS, ...APP_DEFAULTS });
 const TEXT_SIZES = ['normal', 'large', 'xl'];
@@ -37,6 +42,7 @@ export function sanitiseSettings(raw) {
     const v = raw[k];
     if (k === 'textSize') { if (TEXT_SIZES.includes(v)) out[k] = v; continue; }
     if (k === 'theme') { if (THEMES.includes(v)) out[k] = v; continue; }
+    if (k === 'sortDelay') { if (v in SORT_DELAYS) out[k] = v; continue; }
     if (def === null || typeof v === typeof def) out[k] = v;
   }
   return out;

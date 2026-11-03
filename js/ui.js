@@ -105,16 +105,17 @@ function setInert(on) {
 /** Simple two-button (or one-button) dialog. Resolves true for the action. */
 export function confirmDialog({ title, text, cancel = 'Cancel', action = 'OK', danger = false, icon: ic, alert = false, wide = false }) {
   return new Promise((resolve) => {
-    const d = el(`<div class="${wide ? 'wide' : ''}" aria-labelledby="dlg-t">
+    const d = el(`<div class="${wide ? 'wide' : ''} sheet-body" aria-labelledby="dlg-t">
       ${ic ? `<span class="dialog-icon">${icon(ic, 44)}</span>` : ''}
       <h2 id="dlg-t">${esc(title)}</h2>
       ${text ? `<p>${esc(text)}</p>` : ''}
       <div class="row">
         ${cancel ? `<button type="button" class="btn btn-quiet btn-dialog" data-r="0">${esc(cancel)}</button>` : ''}
-        <button type="button" class="btn ${danger ? 'btn-danger' : 'btn-primary'} btn-dialog" data-r="1">${esc(action)}</button>
+        <button type="button" class="btn ${danger ? 'btn-danger-quiet' : 'btn-primary'} btn-dialog" data-r="1">${esc(action)}</button>
       </div></div>`);
     let result = false;
     const dlg = openDialog(d, { role: alert ? 'alertdialog' : 'dialog', onClose: () => resolve(result) });
+    dlg.scrim.classList.add('scrim-sheet');
     d.querySelectorAll('[data-r]').forEach((b) => b.addEventListener('click', () => { result = b.dataset.r === '1'; dlg.close(); }));
   });
 }
@@ -135,31 +136,41 @@ export function bindSwitch(root, id, onChange) {
   return b;
 }
 
-/** Segmented control markup (role radiogroup). */
-export function segHtml(name, label, options, value) {
-  return `<div class="seg-group"><span class="seg-label" id="seg-${name}">${esc(label)}</span>
-    <div class="seg" role="radiogroup" aria-labelledby="seg-${name}">
-    ${options.map(([v, l]) => `<button type="button" role="radio" data-seg="${name}" data-v="${v}" aria-checked="${v === value}" tabindex="${v === value ? 0 : -1}">${esc(l)}</button>`).join('')}
+/** Segmented control: real buttons with aria-pressed inside a labelled group (design spec). */
+export function segHtml(name, label, options, value, { hideLabel = false } = {}) {
+  return `<div class="seg-group"><span class="seg-label${hideLabel ? ' sr-only' : ''}" id="seg-${name}">${esc(label)}</span>
+    <div class="seg" role="group" aria-labelledby="seg-${name}">
+    ${options.map(([v, l]) => `<button type="button" data-seg="${name}" data-v="${esc(v)}" aria-pressed="${String(v) === String(value)}">${esc(l)}</button>`).join('')}
     </div></div>`;
 }
 
 export function bindSeg(root, name, onChange) {
   const btns = [...root.querySelectorAll(`[data-seg="${name}"]`)];
-  const pick = (b) => {
-    btns.forEach((x) => { x.setAttribute('aria-checked', String(x === b)); x.tabIndex = x === b ? 0 : -1; });
+  btns.forEach((b) => b.addEventListener('click', () => {
+    btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     onChange(b.dataset.v);
-  };
-  btns.forEach((b, i) => {
-    b.addEventListener('click', () => pick(b));
-    b.addEventListener('keydown', (e) => {
-      const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
-      if (!d) return;
-      e.preventDefault();
-      const n = btns[(i + d + btns.length) % btns.length];
-      n.focus();
-      pick(n);
-    });
-  });
+  }));
+}
+
+// ---- toast: one at a time, 5 s, optional Undo ----
+let toastTimer = null;
+export function toast(text, { action, onAction, ms = 5000 } = {}) {
+  document.querySelector('.toast')?.remove();
+  clearTimeout(toastTimer);
+  const t = el(`<div class="toast" role="status"><span>${esc(text)}</span>${action ? `<button type="button" class="toast-btn">${esc(action)}</button>` : ''}</div>`);
+  const close = () => { clearTimeout(toastTimer); t.remove(); };
+  t.querySelector('button')?.addEventListener('click', () => { close(); onAction && onAction(); });
+  document.body.appendChild(t);
+  toastTimer = setTimeout(close, ms);
+  return close;
+}
+
+/** A sheet: a dialog with a grabber, from the bottom on phones. `html` is the inner markup. */
+export function openSheet(html, opts = {}) {
+  const d = el(`<div class="sheet-body">${html}</div>`);
+  const dlg = openDialog(d, opts);
+  d.closest('.scrim').classList.add('scrim-sheet');
+  return dlg;
 }
 
 /** The app mark (the same art as the app icon), sized for headers and the install card. */

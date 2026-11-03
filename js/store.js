@@ -8,7 +8,7 @@
 // Add a collection: add its name to COLLECTIONS and bump DB_VERSION.
 import { APP_ID } from './config.js';
 
-export const COLLECTIONS = ['items'];
+export const COLLECTIONS = ['groups', 'games', 'matches', 'meta'];
 const DB_NAME = APP_ID;
 const DB_VERSION = 1;
 let dbPromise;

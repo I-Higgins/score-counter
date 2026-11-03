@@ -1,68 +1,115 @@
-/* Design tokens. Replace the values with the ones from your Claude Design handoff;
-   keep the names so app.css keeps working. All colours meet WCAG AA in each theme
-   (High contrast aims for AAA). Don't hard-code colours or sizes in app.css. */
+/* Score Counter design tokens (Claude Design, screen 14 · Handoff).
+   Drop-in replacement for css/tokens.css: keeps every token name the template's
+   shared components (ui.js, settings, dialogs) already use, and adds the
+   score-counter ones below. Reference only: design/ is never served.
+   Note: this app's default theme is dark (set APP_DEFAULTS.theme = "dark"). */
+
 :root{
-  /* Light (default) */
-  --bg:#F4EFE7; --surface:#FFFDF9; --surface-2:#EFE7DA;
-  --ink:#2A2521; --ink-2:#5E554D; --line:#D6CBBB;
-  --accent:#2D5F5D; --accent-press:#1F4644; --on-accent:#FFFFFF;
-  --danger:#A3402F; --focus:#1F4644; --link:#1F4644;
-  --control-off:#8E8377; --knob:#FFFFFF; --input-bg:#FFFFFF;
-  --chip-bg:#DCE8E6; --chip-ink:#1F4644;
-  --scrim:rgba(42,37,33,.45);
-  --shadow-card:0 1px 0 rgba(42,37,33,.06),0 6px 18px rgba(42,37,33,.12);
-  --shadow-dialog:0 24px 64px rgba(42,37,33,.30);
+  /* Light theme (base) */
+  --bg:#F4F3F0; --surface:#FFFFFF; --surface-2:#E6E4DF;
+  --ink:#18181B; --ink-2:#3F3F46; --muted:#55555D; --line:#DAD8D3; --line-soft:#E6E4DF;
+  --accent:#18181B; --accent-press:#000000; --on-accent:#FFFFFF;
+  --danger:#B42318; --focus:#18181B; --link:#1D5FD1;
+  --control-off:#8E8E96; --knob:#FFFFFF; --input-bg:#FFFFFF;
+  --chip-bg:#E6E4DF; --chip-ink:#18181B;
+  --scrim:rgba(0,0,0,.45);
+  --shadow-card:none;
+  --shadow-dialog:0 24px 64px rgba(0,0,0,.30);
   --shadow-knob:0 1px 3px rgba(0,0,0,.3);
-  --card-border:0px solid transparent;
+  --card-border:1px solid rgba(0,0,0,.14);
   --border-w:2px;
 
-  /* Type: system fonts only (works offline, no downloads) */
+  /* Player cards (all themes): dark text on every player colour */
+  --card-ink:#121214;
+  --card-plate:rgba(18,18,20,.12); --card-plate-press:rgba(18,18,20,.22); --card-plate-border:0px solid transparent;
+  --card-pill:rgba(18,18,20,.14);
+  --neg-bg:#121214; --neg-ink:#FFB4B4;
+  --badge-bg:#121214; --badge-ink:#F4F4F6;
+
+  /* Score Counter additions (Claude Code): values taken from the design screens */
+  --ink-3:#3F3F46; --line-strong:#B9B7B1; --dashed:#77777F; --zero:#6B6B73;
+  --chip-border:0px solid transparent; --strip-border:1px solid var(--line);
+  --note-bg:#E6E4DF; --banner-bg:#FFFFFF; --win-ink:var(--ink);
+  --toast-bg:var(--accent); --toast-ink:var(--on-accent);
+
+  /* Player colours: identical in every theme */
+  --p-pink:#F37DB8; --p-orange:#F59A4A; --p-yellow:#F2D35E; --p-purple:#B98AF6;
+  --p-green:#9CD873; --p-teal:#6CCFB4; --p-blue:#6FB2F7; --p-coral:#F28A80;
+  --p-sand:#D9B38C; --p-silver:#B8C2CC; --p-lilac:#E3A6F0; --p-lime:#C6E36A;
+
+  /* Type: system fonts only */
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --fs-small:17px; --fs-body:20px; --fs-button:22px;
-  --fs-title:28px; --fs-heading:34px; --fs-display:40px;
+  --fs-badge:11px; --fs-label:13px; --fs-small:15px; --fs-body:16px;
+  --fs-button:19px; --fs-name:21px; --fs-title:24px; --fs-heading:30px;
+  --fs-score:36px; --fs-score-compact:30px; --fs-score-tablet:48px; --fs-key:26px;
 
   /* Spacing, shape, touch targets */
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
   --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
-  --radius-sm:12px; --radius-md:16px; --radius-lg:20px; --radius-xl:24px;
+  --radius-sm:12px; --radius-md:16px; --radius-lg:20px; --radius-xl:24px; --radius-sheet:28px;
   --tap-min:44px; --tap-helper:48px; --tap-player:60px; --tap-main:72px;
+  --row-h:84px; --row-h-compact:64px; --row-h-tablet:136px;
+  --plate-w:52px; --plate-h:64px; --plate-w-tablet:76px; --plate-h-tablet:72px;
+  --key-h:56px; --key-h-tablet:84px; --primary-h:60px;
 
   /* Motion */
-  --ease-out:cubic-bezier(.2,.7,.2,1);
-  --dur-press:200ms; --dur-fade:220ms; --dur-overlay:320ms;
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --dur-press:200ms; --dur-fade:150ms; --dur-overlay:320ms;
+  --dur-reorder:220ms; --dur-moved-ring:600ms;
+  --sort-delay-quick:500ms; --sort-delay-normal:900ms; --sort-delay-relaxed:1500ms;
 }
+
 [data-theme="dark"]{
-  --bg:#1C1917; --surface:#282320; --surface-2:#332D29;
-  --ink:#F4EFE7; --ink-2:#C9BFB3; --line:#5A514A;
-  --accent:#7FBDB8; --accent-press:#9FD3CE; --on-accent:#10201F;
-  --danger:#F08C78; --focus:#F2C94C; --link:#9FD3CE;
-  --control-off:#8A8076; --input-bg:#1C1917;
-  --chip-bg:#2F4A48; --chip-ink:#CFE7E4;
+  --bg:#0E0E11; --surface:#1A1A1F; --surface-2:#2A2A31;
+  --ink:#F4F4F6; --ink-2:#C4C4CC; --muted:#A1A1AA; --line:#2C2C33; --line-soft:#26262C;
+  --accent:#F4F4F6; --accent-press:#FFFFFF; --on-accent:#0E0E11;
+  --danger:#FF9B9B; --focus:#FFFFFF; --link:#8AB4FF;
+  --control-off:#3A3A42; --input-bg:#1A1A1F;
+  --chip-bg:#1E1E23; --chip-ink:#F4F4F6;
   --scrim:rgba(0,0,0,.6);
-  --shadow-card:0 6px 18px rgba(0,0,0,.5);
   --shadow-dialog:0 24px 64px rgba(0,0,0,.6);
-  --card-border:1px solid rgba(255,255,255,.08);
+  --card-border:0px solid transparent;
+  --ink-3:#E5E5EA; --line-strong:#3A3A42; --dashed:#52525B; --zero:#8B8B94;
+  --note-bg:#24242A; --banner-bg:#2A2A31; --win-ink:var(--pc);
 }
+
+/* High contrast is white-on-black in this app (the template's default is black-on-white). */
 [data-theme="contrast"]{
-  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#FFFFFF;
-  --ink:#000000; --ink-2:#1F1F1F; --line:#000000;
-  --accent:#003B3A; --accent-press:#000000; --on-accent:#FFFFFF;
-  --danger:#8A1C0C; --focus:#000000; --link:#003B3A;
-  --control-off:#4D4D4D; --input-bg:#FFFFFF;
-  --chip-bg:#FFFFFF; --chip-ink:#000000;
-  --scrim:rgba(0,0,0,.7);
+  --bg:#000000; --surface:#000000; --surface-2:#000000;
+  --ink:#FFFFFF; --ink-2:#FFFFFF; --muted:#FFFFFF; --line:#FFFFFF; --line-soft:#FFFFFF;
+  --accent:#FFFFFF; --accent-press:#FFFFFF; --on-accent:#000000;
+  --danger:#FF6B6B; --focus:#FFFF00; --link:#FFFF00;
+  --control-off:#FFFFFF; --input-bg:#000000;
+  --chip-bg:#000000; --chip-ink:#FFFFFF;
+  --scrim:rgba(0,0,0,.8);
   --shadow-card:none; --shadow-dialog:none; --shadow-knob:0 0 0 2px #000000;
-  --card-border:3px solid #000000;
+  --card-border:3px solid #FFFFFF;
+  --card-plate:transparent; --card-plate-press:rgba(0,0,0,.2); --card-plate-border:2.5px solid #000000;
+  --neg-bg:#000000; --neg-ink:#FFFFFF;
   --border-w:3px;
+  --ink-3:#FFFFFF; --line-strong:#FFFFFF; --dashed:#FFFFFF; --zero:#FFFFFF;
+  --chip-border:2px solid #FFFFFF; --strip-border:2px solid #FFFFFF;
+  --note-bg:#000000; --banner-bg:#000000; --win-ink:#FFFF00;
+  --badge-bg:#000000; --badge-ink:#FFFFFF;
 }
+
+/* Text sizes: Standard / Large (×1.15) / Largest (×1.3). Rows grow with text. */
 [data-text="large"]{
-  --fs-small:20px; --fs-body:24px; --fs-button:26px;
-  --fs-title:34px; --fs-heading:41px; --fs-display:48px;
+  --fs-badge:13px; --fs-label:15px; --fs-small:17px; --fs-body:18px;
+  --fs-button:22px; --fs-name:24px; --fs-title:28px; --fs-heading:35px;
+  --fs-score:41px; --fs-score-compact:34px; --fs-score-tablet:55px; --fs-key:30px;
+  --row-h:96px; --row-h-compact:74px; --row-h-tablet:156px;
 }
 [data-text="xl"]{
-  --fs-small:24px; --fs-body:28px; --fs-button:31px;
-  --fs-title:39px; --fs-heading:48px; --fs-display:56px;
+  --fs-badge:14px; --fs-label:17px; --fs-small:20px; --fs-body:21px;
+  --fs-button:25px; --fs-name:27px; --fs-title:31px; --fs-heading:39px;
+  --fs-score:47px; --fs-score-compact:39px; --fs-score-tablet:62px; --fs-key:34px;
+  --row-h:109px; --row-h-compact:84px; --row-h-tablet:177px;
 }
+
+/* Row and key sizes (Handoff: --scale multiplies into row heights) */
+:root{ --plate-w-compact:44px; --plate-h-compact:52px; --score-w:76px; --key-h-phone-land:44px; }
+
 @media (prefers-reduced-motion:reduce){
-  :root{ --dur-press:0ms; --dur-fade:0ms; --dur-overlay:0ms; }
+  :root{ --dur-press:0ms; --dur-fade:150ms; --dur-overlay:0ms; --dur-reorder:0ms; }
 }
