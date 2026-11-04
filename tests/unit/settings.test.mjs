@@ -18,3 +18,11 @@ test('good values are kept', () => {
 test('rubbish input never throws', () => {
   for (const raw of [null, undefined, 42, 'text', []]) assert.deepEqual(sanitiseSettings(raw), { ...DEFAULTS });
 });
+
+test('app settings: dark by default, re-sort timing and keep-awake are checked', () => {
+  assert.equal(DEFAULTS.theme, 'dark');
+  assert.equal(sanitiseSettings({ sortDelay: 'forever' }).sortDelay, 'normal');
+  assert.equal(sanitiseSettings({ sortDelay: 'relaxed', keepAwake: false }).sortDelay, 'relaxed');
+  assert.equal(sanitiseSettings({ keepAwake: 'no' }).keepAwake, true);
+  assert.equal(sanitiseSettings({ theme: null }).theme, null); // Auto
+});
