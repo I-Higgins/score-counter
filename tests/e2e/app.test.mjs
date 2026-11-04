@@ -155,6 +155,25 @@ for (const { name, type } of browsers) {
       } finally { await browser.close(); await own.close().catch(() => {}); }
     });
 
+    test('the page itself never scrolls; only #app does, and only when content overflows', async () => {
+      const { browser, page } = await newPage(type, srv.url, { viewport: IPHONE });
+      try {
+        await quickGame(page, srv.url, ['Ann', 'Ben']);
+        const state = () => page.evaluate(() => {
+          const app = document.getElementById('app');
+          return { page: document.scrollingElement.scrollHeight > innerHeight, app: app.scrollHeight > app.clientHeight };
+        });
+        assert.deepEqual(await state(), { page: false, app: false }, 'scoreboard fits: nothing scrolls');
+        await page.goto(srv.url + '#/help');
+        await page.waitForSelector('#app[data-route="/help"]');
+        assert.deepEqual(await state(), { page: false, app: true }, 'long screens scroll inside #app');
+        await page.locator('#app').evaluate((el) => { el.scrollTop = 500; });
+        await page.goto(srv.url + '#/settings');
+        await page.waitForSelector('#app[data-route="/settings"]');
+        assert.equal(await page.locator('#app').evaluate((el) => el.scrollTop), 0, 'a new screen starts at the top');
+      } finally { await browser.close(); }
+    });
+
     test('accessibility: no WCAG A/AA problems and 44 px touch targets, on every screen, theme and size', async () => {
       const combos = [
         [IPHONE, { theme: 'dark', textSize: 'normal' }],
