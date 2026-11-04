@@ -1,5 +1,5 @@
 // How to play the built-in games: short, in our own words, enough to start or
-// remind people offline. The Wikipedia link is the only web address in the app:
+// remind people offline (Trash has no Wikipedia article, so its guide has no link). The Wikipedia link is the only web address in the app:
 // a plain link the person taps (it opens in Safari), never fetched by the app.
 // Games point here with `about` (see PRESETS in model.js).
 
@@ -157,6 +157,24 @@ export const INFO = {
       'Most points after round 3 wins.',
     ],
   },
+  'preset-trash': {
+    // No Wikipedia article, so no link: the guide here has to stand on its own.
+    intro: 'Fill your row of face-down cards from Ace to 10 before anyone else. Each time you do, you play the next hand with one card fewer. 2 to 4 players with one deck, or use two decks for more. Also called Garbage.',
+    start: [
+      'Everyone starts with 10 cards: deal them face down in two rows of 5. The spots are Ace to 5 on top and 6 to 10 below.',
+      'On your turn, take the top card of the deck or the discard pile.',
+      'If it’s an Ace to 10 and that spot is still face down, put it there face up. Pick up the card you covered and keep going.',
+      'Jacks are wild: put one in any face-down spot. Many groups play Kings wild instead.',
+      'Queens and Kings (if not wild), or a card whose spot is already face up, are trash: discard it to end your turn.',
+      'When all your cards are face up, call “Trash!” and you’ve won the hand. Many groups give everyone else one more turn.',
+      'Next hand, whoever won it is dealt one card fewer and fills spots up to that number only. Everyone else keeps their number.',
+    ],
+    scoring: [
+      'Your score is how many cards you’re dealt next hand. Everyone starts on 10.',
+      'Won the hand? Tap your score, then −1.',
+      'The game ends when someone wins a hand with 5 cards, so they’re down to 4. The classic game goes all the way: win a hand with 1 card. To play that way, set the target to 0 in Edit.',
+    ],
+  },
 };
 
 /** How to play this game, if the app knows it (built-ins and their copies). */
@@ -170,4 +188,5 @@ export function phaseText(game, n) {
   return (info && info.phases && game.phases === info.phases.length && info.phases[n - 1]) || '';
 }
 
-export const wikiUrl = (info) => WIKI + info.wiki;
+/** The Wikipedia link for a guide, or '' when there's no article (Trash). */
+export const wikiUrl = (info) => (info && info.wiki ? WIKI + info.wiki : '');

@@ -29,7 +29,7 @@ export function showGameInfo(game, { editHref = null } = {}) {
     ${notes ? `<p class="how-notes">${esc(notes)}</p>` : `<p class="note">No notes yet. Add house rules or reminders in Edit.</p>`}
     <h3 class="how-h">Set up in this app</h3>
     <ul class="rules">${M.ruleRows(game).map(([k, v]) => `<li><span>${esc(k)}</span><strong>${esc(v)}</strong></li>`).join('')}</ul>
-    ${info ? `<a class="btn btn-secondary btn-wide" href="${esc(wikiUrl(info))}" target="_blank" rel="noopener noreferrer" data-wiki>Full rules on Wikipedia</a>
+    ${wikiUrl(info) ? `<a class="btn btn-secondary btn-wide" href="${esc(wikiUrl(info))}" target="_blank" rel="noopener noreferrer" data-wiki>Full rules on Wikipedia</a>
       <p class="note center">Opens in your browser. Needs the internet.</p>` : ''}
     ${editHref ? `<a class="btn btn-secondary btn-wide" href="${esc(editHref)}" data-edit-notes>${notes ? 'Edit notes and rules' : 'Add notes'}</a>` : ''}
     <button type="button" class="btn btn-primary btn-wide" data-close>Done</button>`);

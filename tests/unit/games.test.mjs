@@ -11,14 +11,15 @@ const start = (game) => M.newMatch({ id: 'm', game, players: people, groupId: 'g
 test('every built-in is a valid game with its own how-to-play guide', () => {
   const ids = M.PRESETS.map((g) => g.id);
   assert.equal(new Set(ids).size, ids.length, 'ids are unique');
-  for (const id of ['5-crowns', 'dutch-blitz', 'phase-10', 'skip-bo', 'uno', '500', 'president', 'fishbowl']) assert.ok(preset(id), id);
+  for (const id of ['5-crowns', 'dutch-blitz', 'phase-10', 'skip-bo', 'uno', '500', 'president', 'fishbowl', 'trash']) assert.ok(preset(id), id);
   for (const g of M.PRESETS) {
     const clean = M.sanitiseGame(g);
     assert.equal(clean.name, g.name);
     const info = infoFor(g);
     assert.ok(info, `${g.name} has a guide`);
     assert.ok(info.intro && info.start.length >= 3 && info.scoring.length >= 2, `${g.name} guide is complete enough to play offline`);
-    assert.match(wikiUrl(info), /^https:\/\/en\.wikipedia\.org\/wiki\/[A-Za-z0-9_()%-]+$/);
+    if (g.id === 'preset-trash') assert.equal(wikiUrl(info), '', 'Trash has no Wikipedia article, so no link');
+    else assert.match(wikiUrl(info), /^https:\/\/en\.wikipedia\.org\/wiki\/[A-Za-z0-9_()%-]+$/);
     for (const line of [info.intro, ...info.start, ...info.scoring]) assert.ok(!/https?:/.test(line), 'no links in the text');
   }
   assert.deepEqual(Object.keys(INFO).sort(), ids.slice().sort(), 'no orphan guides');
@@ -126,4 +127,51 @@ test('describing and rule rows mention phases and round names', () => {
   assert.equal(rows.Winner, 'Most phases, then lowest score');
   assert.equal(rows['Game ends'], 'When someone finishes phase 10');
   assert.equal(Object.fromEntries(M.ruleRows(preset('fishbowl')))['Round names'], 'Describe it, One word, Act it out');
+});
+
+// 0.3: start scores, and targets that count down (Trash).
+test('Trash: everyone starts on 10, getting out drops you one, out with 5 (down to 4) wins', () => {
+  const g = preset('trash');
+  assert.deepEqual([g.winner, g.startScore, g.end, g.quick], ['low', 10, { kind: 'target', target: 4 }, [-1]]);
+  assert.ok(M.countsDown(g));
+  let m = start(g);
+  assert.deepEqual(M.totals(m), { a: 10, b: 10, c: 10 });
+  assert.deepEqual(M.leaders(m.players, M.totals(m), 'low'), [], 'nobody leads at the start');
+  m = M.saveRound(m, { a: -1 }, 1);
+  assert.deepEqual(M.totals(m), { a: 9, b: 10, c: 10 });
+  assert.deepEqual(M.leaders(m.players, M.totals(m), 'low'), ['a']);
+  for (let i = 0; i < 4; i++) m = M.saveRound(m, { b: -1 }, 2 + i);
+  assert.equal(m.endedAt, null, 'Ben on 6: not over');
+  m = M.saveRound(m, { b: -1 }, 7);
+  assert.equal(m.endedAt, null, 'Ben got out with 6, down to 5: not over');
+  m = M.saveRound(m, { b: -1 }, 8);
+  assert.equal(M.totals(m).b, 4);
+  assert.ok(m.endedAt, 'Ben got out with 5: game over');
+  assert.deepEqual(m.winnerIds, ['b']);
+  assert.match(M.describeGame(g), /start on 10 · first down to 4/);
+  assert.deepEqual(M.ruleRows(g).find(([k]) => k === 'Everyone starts on'), ['Everyone starts on', '10']);
+  assert.equal(M.ruleRows(g).find(([k]) => k === 'Game ends')[1], 'First down to 4');
+});
+
+test('start scores: counting up still works, old games default to 0, and bad set-ups are refused', () => {
+  const up = { ...preset('uno'), startScore: 100 };
+  let m = start(up);
+  assert.deepEqual(M.totals(m), { a: 100, b: 100, c: 100 });
+  m = M.saveRound(m, { a: 399 }, 1);
+  assert.equal(m.endedAt, null);
+  m = M.saveRound(m, { a: 1 }, 2);
+  assert.deepEqual(m.winnerIds, ['a'], 'reached 500 from a start of 100');
+  const old = { ...preset('uno') };
+  delete old.startScore;
+  assert.equal(M.sanitiseGame(old).startScore, 0);
+  assert.deepEqual(M.totals(start(old)), { a: 0, b: 0, c: 0 });
+  assert.ok(!M.ruleRows(old).some(([k]) => k === 'Everyone starts on'));
+  const trash = preset('trash');
+  assert.equal(M.sanitiseGame({ ...trash, end: { kind: 'target', target: 0 } }).end.target, 0, 'classic Trash: down to 0');
+  assert.throws(() => M.sanitiseGame({ ...trash, end: { kind: 'target', target: 10 } }), /Bad target/, 'target equal to the start');
+  assert.throws(() => M.sanitiseGame({ ...preset('uno'), end: { kind: 'target', target: 0 } }), /Bad target/, 'counting up to 0');
+  assert.throws(() => M.sanitiseGame({ ...trash, startScore: 1.5 }), /Bad start score/);
+  assert.throws(() => M.sanitiseGame({ ...trash, startScore: '10' }), /Bad start score/);
+  const back = M.sanitiseGame(JSON.parse(JSON.stringify(trash)));
+  assert.equal(back.startScore, 10, 'survives a share round-trip');
 });

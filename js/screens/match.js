@@ -57,7 +57,7 @@ export async function renderMatch(root, ctx) {
       <table class="full">
         <caption class="sr-only">${hand ? 'Hand' : 'Round'} by ${hand ? 'hand' : 'round'} scores</caption>
         <thead><tr><th scope="col" class="rd">${hand ? 'Hand' : 'Rd'}</th>${players.map((p) => `<th scope="col"><span class="th-name">${dot(p.color)}${esc(name(p.id))}</span></th>`).join('')}</tr></thead>
-        <tbody>${match.rounds.map((r, i) => `<tr>
+        <tbody>${M.startScore(match.game) ? `<tr class="start-row"><th scope="row" class="rd">Start</th>${players.map(() => `<td>${M.fmt(M.startScore(match.game))}</td>`).join('')}</tr>` : ''}${match.rounds.map((r, i) => `<tr>
           <th scope="row" class="rd"><button type="button" class="rd-btn" data-edit="${i}" aria-label="Fix ${hand ? 'hand' : 'round'} ${r.n}">${r.n}</button></th>
           ${players.map((p) => `<td class="${(r.scores[p.id] || 0) === 0 ? 'zero' : ''}">${M.fmt(r.scores[p.id] || 0)}${phased && (r.made || []).includes(p.id) ? `<span class="made" aria-hidden="true"> ✓</span><span class="sr-only">, made phase</span>` : ''}</td>`).join('')}</tr>`).join('')}</tbody>
         <tfoot>${phased ? `<tr><th scope="row" class="rd">Phases</th>${players.map((p) => `<td>${done[p.id]}</td>`).join('')}</tr>` : ''}<tr><th scope="row" class="rd">Total</th>${players.map((p) => `<td class="${winIds.includes(p.id) ? 'win' : ''}"${winIds.includes(p.id) ? ` style="--pc: var(--p-${esc(p.color)})"` : ''}>${M.fmt(t[p.id])}</td>`).join('')}</tr></tfoot>
