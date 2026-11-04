@@ -5,19 +5,26 @@ import { icon } from '../icons.js';
 import { el, esc } from '../ui.js';
 import { errorState, headHtml } from './common.js';
 import { showImport, badImport } from './import.js';
+import { showGameInfo, infoButtonHtml } from './game-info-sheet.js';
 
 export async function renderGames(root) {
   let games;
   try { games = await data.listGames(); } catch { root.replaceChildren(errorState('Your games couldn’t be opened')); return; }
   const view = el(`<main class="screen games" aria-labelledby="page-title">
     ${headHtml({ back: '#/settings', backLabel: 'Back to settings', title: 'Games' })}
-    <ul class="list-card">${games.map((g) => `<li><a class="list-row" href="#/game/${encodeURIComponent(g.id)}">
-      <span class="game-text"><strong>${esc(g.name)}</strong><span>${esc(M.describeGame(g))}</span></span>${icon('chevron-right', 16)}</a></li>`).join('') || '<li class="list-empty">No games yet.</li>'}</ul>
+    <ul class="list-card games-list">${games.map((g) => `<li><a class="list-row" href="#/game/${encodeURIComponent(g.id)}" aria-label="Edit ${esc(g.name)}${g.hidden ? ', hidden from New game' : ''}">
+      <span class="game-text"><strong>${esc(g.name)}${g.hidden ? ' <span class="tag">Hidden</span>' : ''}</strong><span>${esc(M.describeGame(g))}</span></span>${icon('chevron-right', 16)}</a>${infoButtonHtml(g)}</li>`).join('') || '<li class="list-empty">No games yet.</li>'}</ul>
+    <p class="note">Tap a game to change its rules, add notes, or hide it from New game.</p>
     <a class="btn btn-dashed btn-wide" href="#/game/new">+ Create a game</a>
     <button type="button" class="btn btn-secondary btn-wide" data-import>${icon('restore', 22)}<span>Add a game from a file</span></button>
     <input type="file" accept=".json,application/json" hidden data-import-input>
     <p class="note">Someone sent you a game link? Just open it: you’ll be asked before anything is added.</p>
   </main>`);
+  view.querySelector('.games-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-info]');
+    const game = b && games.find((g) => g.id === b.dataset.info);
+    if (game) showGameInfo(game, { editHref: `#/game/${encodeURIComponent(game.id)}` });
+  });
   const input = view.querySelector('[data-import-input]');
   view.querySelector('[data-import]').addEventListener('click', () => { input.value = ''; input.click(); });
   input.addEventListener('change', async () => {

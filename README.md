@@ -9,8 +9,12 @@ A free, ad-free score counter for card and board games. It works offline, instal
 ## What it does
 - **Always shows grand totals.** Tap + and − during a round to build each player's "this round" amount under their total. **End round** opens a keypad to check each score, then saves the round.
 - **Sorts itself** (lowest first, highest first or manual). It waits a moment after your last tap and never moves a row while your finger is on the screen. Tied players share a rank (1, 1, 3).
-- **Built-in games:** 5 Crowns (rounds 3–13, wild card and dealer shown, lowest wins) and Dutch Blitz (highest wins, first to 100; change the target in the game's settings).
-- **Your own games:** high or low wins, end at a target, after the last round or never, round range and label, quick buttons, and dealer or first-player marker. You can create, edit, duplicate and delete them.
+- **Built-in games:** 5 Crowns, Dutch Blitz, Phase 10, Skip-Bo, Uno, 500, President (Scum) and Fishbowl, each set up with its usual scoring. Change any of them in Games.
+- **How to play:** the ⓘ button next to a game (and **How to play** in the in-game menu) shows a short guide to getting started and scoring, your own notes, and a link to the full rules on Wikipedia. The guide works offline; the link needs the internet and opens in your browser.
+- **Notes:** add house rules or reminders to any game, built-in or your own. They're shown in How to play and travel with shared games.
+- **Phase tracker** (Phase 10): tick who made their phase when you save each hand. Players are ranked by phases finished, then points, and the game ends after someone finishes the last phase.
+- **Your own games:** high or low wins, end at a target, after the last round or never, round range, round labels (numbers, cards and wild card, or your own names like Fishbowl's), quick buttons, phase tracker, and dealer or first-player marker. You can create, edit, duplicate, hide from New game, and delete them. **Finish game** in the menu ends any game, including ones that never end by themselves.
+- **Teams:** for team games (500, Fishbowl), add each team as a player.
 - **Groups and stats:** groups you make (like Family) keep every finished game. Stats show wins, win %, average and best, for all games or one game. Ties are shared wins. Quick games aren't counted.
 - **History:** a round-by-round table for every game. Tap a round number to fix a score.
 - **Sharing:** share a game's *rules* as a link or a file. Opening one always asks before adding it.
@@ -27,13 +31,13 @@ A free, ad-free score counter for card and board games. It works offline, instal
 Everything is stored on the device only. Deleting the app or clearing Safari's website data deletes it too, and there's no account to get it back from. Use **Settings → Back up to a file** now and then and keep the file somewhere safe, like iCloud Drive. **Restore** adds the backup's groups, games and history back, and restoring twice never duplicates anything.
 
 ## Sharing a game
-In a game's settings, tap **Share**. The link looks like `…/score-counter/#game=…`. The rules are encoded after the `#`, which browsers never send to a server. The link holds only the rules: no players, scores or history. Opening it on another phone (with the app installed once) shows the rules and asks before adding. A game with the same name is added alongside, never replaced.
+In a game's settings, tap **Share**. The link looks like `…/score-counter/#game=…`. The rules are encoded after the `#`, which browsers never send to a server. The link holds only the rules and notes: no players, scores or history. Opening it on another phone (with the app installed once) shows the rules and asks before adding. A game with the same name is added alongside, never replaced.
 
 ## Guided Access tip
 If a child is keeping score and might leave the app by accident, turn on **Settings → Accessibility → Guided Access**, open Score Counter, then triple-click the side (or Home) button.
 
 ## Privacy
-Nothing leaves the device. There's no server, account, analytics, tracking, ads or in-app purchases, and the Content-Security-Policy blocks requests to other sites.
+Nothing leaves the device. There's no server, account, analytics, tracking, ads or in-app purchases, and the Content-Security-Policy blocks requests to other sites. The only web addresses in the app are the Wikipedia "Full rules" links, which open in your browser only when you tap them.
 
 ## Accessibility
 Aims for WCAG 2.2 AA. It has Dark (the default), Light and High contrast themes, three text sizes, 44 px or larger touch targets, screen-reader labels and reduced motion. Pinch zoom is off on purpose, because accidental zooms mid-game are confusing; the Text size setting replaces it.

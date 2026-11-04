@@ -5,6 +5,7 @@ import { icon } from '../icons.js';
 import { el, esc } from '../ui.js';
 import { newId } from '../store.js';
 import { errorState, headHtml, dot } from './common.js';
+import { showGameInfo, infoButtonHtml } from './game-info-sheet.js';
 
 // Kept while hopping to the game editor or group editor and back.
 const pick = { groupKey: undefined, off: new Set(), gameId: undefined, draftName: '' };
@@ -17,6 +18,8 @@ export async function renderNewGame(root, ctx) {
     root.replaceChildren(errorState('Your games couldn’t be opened'));
     return;
   }
+  const hiddenCount = games.filter((g) => g.hidden).length;
+  games = games.filter((g) => !g.hidden);
   if (ctx.params.mode === 'quick') pick.groupKey = 'quick';
   if (ctx.params.mode && ctx.params.mode.startsWith('group-')) pick.groupKey = ctx.params.mode.slice(6);
   if (pick.groupKey === undefined || (pick.groupKey !== 'quick' && !groups.some((g) => g.id === pick.groupKey))) {
@@ -35,6 +38,7 @@ export async function renderNewGame(root, ctx) {
     <div data-quick-add></div>
     <h2 class="label">Game</h2>
     <ul class="list-card" data-games></ul>
+    ${hiddenCount ? `<a class="note note-link" href="#/games">${hiddenCount} hidden ${hiddenCount === 1 ? 'game' : 'games'} · show or hide in Games</a>` : ''}
     <a class="btn btn-dashed btn-wide" href="#/game/new">+ Create a game</a>
     <div class="grow"></div>
     <span class="note" data-note></span>
@@ -66,6 +70,7 @@ export async function renderNewGame(root, ctx) {
         <span class="radio" aria-hidden="true"></span>
         <span class="game-text"><strong>${esc(gm.name)}</strong><span>${esc(M.describeGame(gm))}</span></span>
       </button>
+      ${infoButtonHtml(gm)}
       <a class="row-edit" href="#/game/${encodeURIComponent(gm.id)}" aria-label="Edit ${esc(gm.name)}">${icon('edit', 20)}</a></li>`).join('')
       || '<li class="list-empty">No games yet. Create one below.</li>';
     const game = games.find((x) => x.id === pick.gameId);
@@ -85,6 +90,8 @@ export async function renderNewGame(root, ctx) {
     if (gb) { pick.groupKey = gb.dataset.group; pick.off.clear(); paint(); return; }
     const pb = e.target.closest('[data-person]');
     if (pb) { const id = pb.dataset.person; if (pick.off.has(id)) pick.off.delete(id); else pick.off.add(id); paint(); return; }
+    const info = e.target.closest('[data-info]');
+    if (info) { const game = games.find((x) => x.id === info.dataset.info); if (game) showGameInfo(game, { editHref: `#/game/${encodeURIComponent(game.id)}` }); return; }
     const gm = e.target.closest('[data-game]');
     if (gm) { pick.gameId = gm.dataset.game; paint(); return; }
     if (e.target.closest('[data-add-name]')) addName();
