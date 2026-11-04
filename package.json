@@ -1,5 +1,5 @@
 {
-  "name": "my-offline-app",
+  "name": "score-counter",
   "version": "0.1.0",
   "private": true,
   "description": "A free, offline, installable web app (PWA). Vanilla HTML/CSS/JS, no build step, data stays on the device.",
