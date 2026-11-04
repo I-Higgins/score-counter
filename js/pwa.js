@@ -26,9 +26,15 @@ export function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
   let refreshing = false;
+  // A worker only counts as an update if it is *waiting* behind one that already
+  // runs this page. The first install never waits (it activates and claims the
+  // page), and WebKit can report its "installed" state late, after it has claimed
+  // the page, which used to make a first install look like an update.
+  let wasControlled = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // Only ever happens after the person tapped "Refresh".
-    if (refreshing || !updateAccepted) return;
+    // Without a tap on "Refresh" this is the first install claiming the page.
+    if (!updateAccepted) { wasControlled = true; return; }
+    if (refreshing) return;
     refreshing = true;
     location.reload();
   });
@@ -36,10 +42,10 @@ export function registerServiceWorker() {
     const track = (worker) => {
       if (!worker) return;
       worker.addEventListener('statechange', () => {
-        if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate(worker);
+        if (worker.state === 'installed' && wasControlled && reg.waiting === worker) showUpdate(worker);
       });
     };
-    if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg.waiting);
+    if (reg.waiting && wasControlled) showUpdate(reg.waiting);
     track(reg.installing);
     reg.addEventListener('updatefound', () => track(reg.installing));
     // Check for updates when the app comes back to the foreground.
