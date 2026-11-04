@@ -224,6 +224,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
 }
 .sc-sofar, .sc-full { display: none; }
 .sc-actions { display: flex; gap: 12px; flex: none; }
+.sc-actions .btn-end { flex: 1 1 auto; width: auto; min-width: 0; }
 .btn-end svg { margin-left: 2px; }
 
 .card {
