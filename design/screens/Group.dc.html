@@ -81,17 +81,17 @@ th,td{padding:0}
 class Component extends DCLogic {
   renderVals() {
     var stats = [
-      { name: 'Isaac', color: '#F59A4A', wins: 5, pct: '36%', avg: 88, best: 61 },
-      { name: 'Kerryn', color: '#F37DB8', wins: 4, pct: '29%', avg: 92, best: 58 },
-      { name: 'Marlies', color: '#F2D35E', wins: 3, pct: '21%', avg: 104, best: 70 },
-      { name: 'Martin', color: '#B98AF6', wins: 2, pct: '14%', avg: 110, best: 74 },
-      { name: 'Hedgehog', color: '#9CD873', wins: 0, pct: '0%', avg: 131, best: 97 }
+      { name: 'Theo', color: '#F59A4A', wins: 5, pct: '36%', avg: 88, best: 61 },
+      { name: 'Rosa', color: '#F37DB8', wins: 4, pct: '29%', avg: 92, best: 58 },
+      { name: 'Priya', color: '#F2D35E', wins: 3, pct: '21%', avg: 104, best: 70 },
+      { name: 'Oscar', color: '#B98AF6', wins: 2, pct: '14%', avg: 110, best: 74 },
+      { name: 'Platypus', color: '#9CD873', wins: 0, pct: '0%', avg: 131, best: 97 }
     ];
     var past = [
-      { winner: 'Isaac', score: '73', meta: '5 Crowns · Tue 4 Nov · 4 players' },
-      { winner: 'Kerryn', score: '102', meta: 'Dutch Blitz · Sat 1 Nov · 5 players' },
-      { winner: 'Kerryn & Martin', score: '81', meta: '5 Crowns · Sat 1 Nov · tie' },
-      { winner: 'Marlies', score: '64', meta: '5 Crowns · Sun 26 Oct · 5 players' }
+      { winner: 'Theo', score: '73', meta: '5 Crowns · Tue 4 Nov · 4 players' },
+      { winner: 'Rosa', score: '102', meta: 'Dutch Blitz · Sat 1 Nov · 5 players' },
+      { winner: 'Rosa & Oscar', score: '81', meta: '5 Crowns · Sat 1 Nov · tie' },
+      { winner: 'Priya', score: '64', meta: '5 Crowns · Sun 26 Oct · 5 players' }
     ].map(function (g, i) { return Object.assign(g, { border: i === 0 ? '0' : '1px solid #26262C' }); });
     return { stats: stats, past: past };
   }

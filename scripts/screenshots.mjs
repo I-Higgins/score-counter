@@ -32,24 +32,24 @@ for (const vpName of ONLY) {
     await page.goto(url);
     await page.waitForSelector('#app[data-route]');
     await shot('01-first-launch');
-    const gid = await makeGroup(page, url, 'Family', ['Kerryn', 'Isaac', 'Marlies', 'Martin', 'Hedgehog']);
-    await page.locator('[data-person]').last().click(); // Hedgehog sits this one out
+    const gid = await makeGroup(page, url, 'Family', ['Rosa', 'Theo', 'Priya', 'Oscar', 'Platypus']);
+    await page.locator('[data-person]').last().click(); // Platypus sits this one out
     await shot('04-new-game');
     await page.locator('[data-person]').last().click();
     await page.locator('[data-start]').click();
     await page.waitForSelector('.card');
-    await playRound(page, { Kerryn: 8, Isaac: 0, Marlies: 12, Martin: 3, Hedgehog: -2 });
-    await playRound(page, { Kerryn: 6, Isaac: 9, Marlies: 10, Martin: 6, Hedgehog: -2 });
-    for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Plus one for Isaac this round' }).click();
+    await playRound(page, { Rosa: 8, Theo: 0, Priya: 12, Oscar: 3, Platypus: -2 });
+    await playRound(page, { Rosa: 6, Theo: 9, Priya: 10, Oscar: 6, Platypus: -2 });
+    for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Plus one for Theo this round' }).click();
     await page.waitForTimeout(1200);
     await shot('01-scoreboard');
     await page.locator('[data-act="menu"]').click();
     await shot('01b-menu');
     await page.goto(url + '#/round');
     await page.waitForSelector('.keypad');
-    await page.locator('.re-row', { hasText: 'Kerryn' }).click();
+    await page.locator('.re-row', { hasText: 'Rosa' }).click();
     await page.locator('[data-k="1"]').click(); await page.locator('[data-k="2"]').click();
-    await page.locator('.re-row', { hasText: 'Marlies' }).click();
+    await page.locator('.re-row', { hasText: 'Priya' }).click();
     await shot('02-round-entry');
     await page.locator('[data-cancel]').click();
     await page.waitForSelector('.card');
@@ -58,7 +58,7 @@ for (const vpName of ONLY) {
     await shot('03b-full-table');
     await page.goto(url + '#/');
     await page.waitForSelector('.card');
-    await page.getByRole('link', { name: /^Isaac, position/ }).click();
+    await page.getByRole('link', { name: /^Theo, position/ }).click();
     await page.waitForSelector('.swatches');
     await shot('09-player-edit');
     await page.goto(url + '#/game/preset-dutch-blitz');
@@ -76,8 +76,8 @@ for (const vpName of ONLY) {
     await page.locator('.game-row', { hasText: 'Dutch Blitz' }).first().click();
     await page.locator('[data-start]').click();
     await page.waitForSelector('.card');
-    await playRound(page, { Kerryn: 40, Isaac: 55, Marlies: 22, Martin: -6, Hedgehog: 31 });
-    await playRound(page, { Kerryn: 38, Isaac: 49, Marlies: 30, Martin: 12, Hedgehog: 18 });
+    await playRound(page, { Rosa: 40, Theo: 55, Priya: 22, Oscar: -6, Platypus: 31 });
+    await playRound(page, { Rosa: 38, Theo: 49, Priya: 30, Oscar: 12, Platypus: 18 });
     await page.getByRole('heading', { name: /wins/ }).waitFor();
     await shot('03-game-over');
     await page.goto(url + `#/group/${gid}`);
@@ -106,7 +106,7 @@ for (const vpName of ONLY) {
     await page.waitForSelector('.card');
     await page.locator('[data-end]').click();
     await page.waitForSelector('.keypad');
-    for (const n of ['Kerryn', 'Marlies']) await page.getByRole('button', { name: `${n} made phase` }).click();
+    for (const n of ['Rosa', 'Priya']) await page.getByRole('button', { name: `${n} made phase` }).click();
     await shot('13b-phase-10-hand');
     for (let i = 0; i < 5; i++) await page.locator('[data-next]').click();
     await page.waitForSelector('.card');

@@ -113,11 +113,11 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.seats = [
-      { id: 'k', name: 'Kerryn', color: '#F37DB8', past: [8, 6] },
-      { id: 'i', name: 'Isaac', color: '#F59A4A', past: [0, 9] },
-      { id: 'm', name: 'Marlies', color: '#F2D35E', past: [12, 10] },
-      { id: 't', name: 'Martin', color: '#B98AF6', past: [3, 6] },
-      { id: 'h', name: 'Hedgehog', color: '#9CD873', past: [-2, -2] },
+      { id: 'k', name: 'Rosa', color: '#F37DB8', past: [8, 6] },
+      { id: 'i', name: 'Theo', color: '#F59A4A', past: [0, 9] },
+      { id: 'm', name: 'Priya', color: '#F2D35E', past: [12, 10] },
+      { id: 't', name: 'Oscar', color: '#B98AF6', past: [3, 6] },
+      { id: 'h', name: 'Platypus', color: '#9CD873', past: [-2, -2] },
       { id: 'p', name: 'Panda', color: '#6CCFB4', past: [15, 13] }
     ];
     var players = this.seats.map(function (s) { return { id: s.id, name: s.name, color: s.color, total: s.past[0] + s.past[1], round: 0 }; });

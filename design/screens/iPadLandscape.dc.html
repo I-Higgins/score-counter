@@ -56,7 +56,7 @@ th,td{padding:0}
     <aside aria-label="Round and history" style="width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
       <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 20px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px">
         <span style="font-size: 26px; font-weight: 800">Round 5 <span style="color: #A1A1AA; font-weight: 600">of 13</span></span>
-        <span style="font-size: 17px; color: #E5E5EA; font-weight: 600">5 cards · 5s wild · Marlies deals</span>
+        <span style="font-size: 17px; color: #E5E5EA; font-weight: 600">5 cards · 5s wild · Priya deals</span>
       </div>
       <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 20px; padding: 12px 16px">
         <table style="width: 100%; border-collapse: collapse; font-size: 16px">
@@ -85,8 +85,8 @@ class Component extends DCLogic {
   renderVals() {
     var fmt = function (n) { return n < 0 ? '−' + Math.abs(n) : '' + n; };
     var raw = [
-      ['Hedgehog', '#9CD873', -2, -2, 'Leading'], ['Isaac', '#F59A4A', 0, 9, ''], ['Martin', '#B98AF6', 3, 6, ''],
-      ['Kerryn', '#F37DB8', 8, 6, ''], ['Marlies', '#F2D35E', 12, 10, 'Dealer'], ['Panda', '#6CCFB4', 15, 13, '']
+      ['Platypus', '#9CD873', -2, -2, 'Leading'], ['Theo', '#F59A4A', 0, 9, ''], ['Oscar', '#B98AF6', 3, 6, ''],
+      ['Rosa', '#F37DB8', 8, 6, ''], ['Priya', '#F2D35E', 12, 10, 'Dealer'], ['Panda', '#6CCFB4', 15, 13, '']
     ];
     var rank = 0, prev = null;
     var players = raw.map(function (p, i) {

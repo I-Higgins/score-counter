@@ -43,7 +43,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2p
     </div>
     <div style="background: #1A1A1F; border: 1px solid #2C2C33; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
       <span style="font-size: 18px; font-weight: 800">Round 5 <span style="color: #A1A1AA; font-weight: 600">of 13</span></span>
-      <span style="font-size: 13px; color: #E5E5EA; font-weight: 600">5s wild · Marlies deals</span>
+      <span style="font-size: 13px; color: #E5E5EA; font-weight: 600">5s wild · Priya deals</span>
     </div>
     <div style="flex-grow: 1"></div>
     <a href="RoundEntry.dc.html" style="height: 52px; border-radius: 16px; background: #F4F4F6; color: #0E0E11; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; text-decoration: none">End round 5</a>
@@ -53,7 +53,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #FFFFFF;outline-offset:2p
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
 class Component extends DCLogic {
   renderVals() {
-    var raw = [['Hedgehog', '#9CD873', -4], ['Isaac', '#F59A4A', 9], ['Martin', '#B98AF6', 9], ['Kerryn', '#F37DB8', 14], ['Marlies', '#F2D35E', 22], ['Panda', '#6CCFB4', 28]];
+    var raw = [['Platypus', '#9CD873', -4], ['Theo', '#F59A4A', 9], ['Oscar', '#B98AF6', 9], ['Rosa', '#F37DB8', 14], ['Priya', '#F2D35E', 22], ['Panda', '#6CCFB4', 28]];
     var rank = 0, prev = null;
     var players = raw.map(function (p, i) {
       if (p[2] !== prev) { rank = i + 1; prev = p[2]; }
