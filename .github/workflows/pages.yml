@@ -34,6 +34,13 @@ jobs:
         run: npm run test:e2e
         env:
           CI: 'true'
+      - name: Keep the Playwright traces when a test fails (open at trace.playwright.dev)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 14
 
   deploy:
     needs: test
