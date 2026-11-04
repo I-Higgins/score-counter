@@ -89,7 +89,9 @@ for (const { name, type } of browsers) {
         await page.locator('.list-row', { hasText: 'Family' }).click();
         await page.locator('.list-row', { hasText: 'Ann won · 120' }).waitFor();
         assert.equal(await page.locator('.list-row', { hasText: 'won' }).count(), 1);
+        // A hash-only goto returns before the screen renders: wait for it before counting.
         await page.goto(srv.url + '#/groups');
+        await page.waitForSelector('#app[data-route="/groups"] .list-row');
         assert.equal(await page.locator('.list-row', { hasText: 'Family' }).count(), 1);
       } finally { await browser.close(); }
     });

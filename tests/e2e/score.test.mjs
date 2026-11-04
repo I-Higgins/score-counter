@@ -174,7 +174,7 @@ for (const { name, type } of browsers) {
         await page.getByRole('heading', { name: 'That game couldn’t be read' }).waitFor();
         await page.getByRole('button', { name: 'OK' }).click();
         await page.goto(srv.url + '#/games');
-        await page.locator('.list-row').first().waitFor();
+        await page.waitForSelector('#app[data-route="/games"] .list-row');
         assert.equal(await page.locator('.list-row', { hasText: 'Nope' }).count(), 0);
       } finally { await browser.close(); }
     });
