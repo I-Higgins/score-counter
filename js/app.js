@@ -99,7 +99,7 @@ async function route() {
   if (!view) return; // the screen redirected
   root.replaceChildren(view);
   document.title = found.title ? `${found.title} · ${APP_NAME}` : APP_NAME;
-  window.scrollTo(0, 0);
+  root.scrollTop = 0;
   root.dataset.route = path;
   if (prevPath !== path) prevPath = path;
   try { localStorage.setItem(ROUTE_KEY, path); } catch { /* private mode */ }
