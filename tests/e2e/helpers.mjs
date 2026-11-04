@@ -42,6 +42,8 @@ export async function server() {
  * A fresh browser + iPad-sized touch context. `settings` are written before the
  * app starts (the install card is dismissed by default so it doesn't get in the way).
  */
+let traceSeq = 0;
+
 export async function newPage(browserType, baseUrl, { viewport = IPAD_LANDSCAPE, settings = {}, noShare = true } = {}) {
   const browser = await browserType.launch();
   const context = await browser.newContext({ viewport, hasTouch: true, acceptDownloads: true });
@@ -50,6 +52,14 @@ export async function newPage(browserType, baseUrl, { viewport = IPAD_LANDSCAPE,
     // Use the download path in tests; the share sheet can't be driven headless.
     if (noShare) { try { delete Navigator.prototype.share; delete Navigator.prototype.canShare; } catch { /* ignore */ } }
   }, [`${APP_ID}:settings`, JSON.stringify({ installDismissed: true, ...settings }), noShare]);
+  // In CI, record a Playwright trace (screenshots + DOM per step) for every test, so an
+  // intermittent failure can be inspected afterwards (uploaded as an artifact on failure).
+  if (process.env.CI) {
+    await context.tracing.start({ screenshots: true, snapshots: true });
+    const file = `test-results/${browserType.name()}-${String(++traceSeq).padStart(3, '0')}.zip`;
+    const close = browser.close.bind(browser);
+    browser.close = async () => { await context.tracing.stop({ path: file }).catch(() => {}); return close(); };
+  }
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
