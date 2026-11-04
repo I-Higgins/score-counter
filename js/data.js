@@ -1,8 +1,8 @@
 // The app's data, on top of store.js (IndexedDB).
 //   groups   { id, name, players: [{ id, name, color, seat }], createdAt }
-//   games    GameType records (5 Crowns and Dutch Blitz are seeded once; people can edit or delete them)
+//   games    GameType records (each built-in is added once; people can edit, hide or delete them)
 //   matches  every game played, finished or not
-//   meta     { id: 'app', currentMatchId, quickPlayers, lastGroupId, lastGameId, seeded }
+//   meta     { id: 'app', currentMatchId, quickPlayers, lastGroupId, lastGameId, seeded, seededIds }
 //            { id: 'undo', matchId, stack }   (kept across relaunch)
 //
 // Every change is written straight away, in order, through one queue. A failed
@@ -47,13 +47,22 @@ export async function setApp(changes) {
 /** Forget cached records (after a restore). */
 export function resetCache() { appCache = null; undoCache = null; }
 
-/** First launch: add the built-in games once. Deleted ones don't come back. */
+// The built-ins version 0.1 added, for apps seeded before seededIds existed.
+const FIRST_PRESETS = ['preset-5-crowns', 'preset-dutch-blitz'];
+
+/**
+ * Add each built-in game once: all of them on first launch, and new ones after an
+ * update. Deleted ones don't come back. Records people already have are left alone.
+ */
 export async function ensureSeeded() {
   const app = await getApp();
-  if (app.seeded) return;
+  const done = new Set(app.seededIds || (app.seeded ? FIRST_PRESETS : []));
+  const todo = M.PRESETS.filter((g) => !done.has(g.id));
+  if (!todo.length && app.seeded) return;
   const have = new Set((await store.list('games')).map((g) => g.id));
-  for (const g of M.PRESETS) if (!have.has(g.id)) save('games', { ...g, createdAt: Date.now() });
-  await setApp({ seeded: true });
+  const now = Date.now();
+  for (const g of todo) if (!have.has(g.id)) save('games', { ...g, createdAt: now + M.PRESETS.indexOf(g) });
+  await setApp({ seeded: true, seededIds: M.PRESETS.map((g) => g.id) });
 }
 
 // ---------- reading ----------
