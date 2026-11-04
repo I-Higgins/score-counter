@@ -3,9 +3,9 @@
    portrait, tablet landscape, phone landscape (Handoff 3b). */
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; height: 100%; touch-action: manipulation; /* no double-tap zoom */ }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: manipulation; /* no double-tap zoom */ }
 body {
-  margin: 0; min-height: 100%;
+  margin: 0; height: 100%; overflow: hidden;
   background: var(--bg); color: var(--ink);
   font-family: var(--font); font-size: var(--fs-body); line-height: 1.35;
   -webkit-tap-highlight-color: transparent;
@@ -30,11 +30,17 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
 .note.center, .center { text-align: center; }
 
 /* ---------- Screen shell (safe areas for the notch and home indicator) ---------- */
-#app { min-height: 100vh; min-height: 100dvh; }
+/* The page itself never scrolls or bounces. #app is the only scroller and it
+   starts below the status bar, so content never slides under the notch (or
+   under iOS's darkened status-bar fade). It only scrolls when content overflows. */
+#app {
+  position: fixed; top: env(safe-area-inset-top); right: 0; bottom: 0; left: 0;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
 .screen {
-  min-height: 100vh; min-height: 100dvh;
+  min-height: 100%;
   padding:
-    calc(12px + env(safe-area-inset-top))
+    12px
     calc(16px + env(safe-area-inset-right))
     calc(16px + env(safe-area-inset-bottom))
     calc(16px + env(safe-area-inset-left));
@@ -201,7 +207,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
 .pv-score { font-size: var(--fs-score); font-weight: 800; }
 
 /* ---------- Scoreboard ---------- */
-.score { height: 100vh; height: 100dvh; gap: 12px; overflow: hidden; }
+.score { height: 100%; gap: 12px; overflow: hidden; }
 .sc-top { display: flex; align-items: center; gap: 8px; }
 .chip-game { flex: 1 1 auto; min-width: 0; justify-content: flex-start; padding: 0 14px; gap: 6px; }
 .chip-game > svg { color: var(--muted); }
@@ -288,7 +294,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
 .th-name .dot { width: 8px; height: 8px; }
 
 /* ---------- End round (keypad) ---------- */
-.round { height: 100vh; height: 100dvh; gap: 12px; overflow: hidden; }
+.round { height: 100%; gap: 12px; overflow: hidden; }
 .sub-tablet { display: none; }
 .re-body { display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; min-height: 0; }
 .re-rows { list-style: none; padding: 2px; margin: -2px; display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
@@ -466,13 +472,13 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
 
 /* Tablet portrait: 600 wide and up, taller than wide (artboards 15, 16). */
 @media (min-width: 600px) and (orientation: portrait) {
-  .score { height: auto; min-height: 100dvh; overflow: visible; padding-top: calc(24px + env(safe-area-inset-top)); padding-left: 32px; padding-right: 32px; gap: 16px; }
+  .score { height: auto; min-height: 100%; overflow: visible; padding-top: 24px; padding-left: 32px; padding-right: 32px; gap: 16px; }
   .sc-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; overflow: visible; flex: none; }
   .sc-sofar { display: block; }
   .sc-full { display: inline-flex; min-height: 64px; padding: 0 24px; border-radius: 20px; font-size: calc(var(--fs-body) + 2px); flex: none; }
   .sc-actions { margin-top: auto; position: sticky; bottom: calc(16px + env(safe-area-inset-bottom)); }
   .sc-actions .btn-end { min-height: 64px; font-size: calc(var(--fs-button) + 1px); }
-  .round { padding: calc(24px + env(safe-area-inset-top)) 32px calc(32px + env(safe-area-inset-bottom)); gap: 20px; }
+  .round { padding: 24px 32px calc(32px + env(safe-area-inset-bottom)); gap: 20px; }
 }
 
 /* Tablet sizes shared by portrait and landscape. */
@@ -542,7 +548,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
     grid-template-columns: minmax(0, 1fr) 340px;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas: "top top" "list round" "list sofar" "list actions";
-    padding: calc(24px + env(safe-area-inset-top)) calc(32px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(32px + env(safe-area-inset-left));
+    padding: 24px calc(32px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(32px + env(safe-area-inset-left));
   }
   .sc-top { grid-area: top; margin-bottom: 4px; }
   .sc-sortline { display: none; }
@@ -559,7 +565,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
   .mini-players { display: table; }
   .sc-actions { grid-area: actions; }
   .sc-actions .btn-end { min-height: 64px; }
-  .round { padding: calc(24px + env(safe-area-inset-top)) calc(32px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(32px + env(safe-area-inset-left)); }
+  .round { padding: 24px calc(32px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(32px + env(safe-area-inset-left)); }
 }
 
 /* Phone landscape (450 high or less): a fallback, with a 176-wide side rail (artboard 18). */
@@ -569,7 +575,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
     grid-template-columns: minmax(0, 1fr) 176px;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas: "list top" "list round" "list ." "list actions";
-    padding: calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    padding: 12px calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   }
   .sc-top { grid-area: top; gap: 6px; }
   .sc-top .chip { height: var(--tap-min); width: var(--tap-min); min-width: var(--tap-min); }
@@ -596,7 +602,7 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
   .c-total, .compact .c-total { font-size: calc(var(--fs-score-compact) - 2px); }
   .c-total.neg, .compact .c-total.neg { font-size: calc(var(--fs-score-compact) - 8px); padding: 2px 6px; border-radius: 8px; }
   .c-rd { font-size: calc(var(--fs-badge)); }
-  .round { flex-direction: column; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  .round { flex-direction: column; gap: 8px; padding: 8px calc(16px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
   .round .head .head-sub { display: none; }
   .round .head h1 { font-size: calc(var(--fs-name)); }
   .re-body { flex-direction: row; gap: 12px; }
