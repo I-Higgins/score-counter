@@ -4,7 +4,7 @@ A free, ad-free score counter for card and board games. It works offline, instal
 
 **Live:** https://i-higgins.github.io/score-counter/
 
-![Score Counter on iPhone: a 5 Crowns game, round 5 of 13](docs/screenshot.png)
+<img src="docs/screenshot.png" alt="Score Counter on iPhone: a 5 Crowns game, round 5 of 13" height="600">
 
 ## What it does
 - **Always shows grand totals.** Tap + and − during a round to build each player's "this round" amount under their total. **End round** opens a keypad to check each score, then saves the round.
