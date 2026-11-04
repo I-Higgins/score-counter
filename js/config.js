@@ -3,4 +3,4 @@
 // Bump VERSION for every release (sw.js must match; a unit test checks).
 export const APP_ID = 'score-counter'; // storage keys, cache names, backup format
 export const APP_NAME = 'Score Counter';
-export const APP_VERSION = '0.2.0';
+export const APP_VERSION = '0.3.0';

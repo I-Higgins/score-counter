@@ -30,8 +30,12 @@ export async function renderGameEdit(root, ctx) {
       ${segHtml('marker', 'Show each round', [['dealer', 'Dealer'], ['first', 'First player'], ['none', 'None']], g.marker)}
     </div>
     <div class="panel panel-rows">
+      <div class="prow">
+        <span class="prow-label"><span id="lbl-from">Start score</span><span class="prow-help">Everyone starts on this</span></span>
+        ${stepper('from', M.startScore(g))}
+      </div>
       <div class="prow" data-target-row>
-        <span class="prow-label" id="lbl-target">Target score</span>
+        <span class="prow-label"><span id="lbl-target">Target score</span><span class="prow-help" data-target-help></span></span>
         ${stepper('target', g.end.target)}
       </div>
       <div class="prow">
@@ -82,7 +86,7 @@ export async function renderGameEdit(root, ctx) {
   </main>`);
 
   function stepper(key, value) {
-    const what = { last: 'last round', start: 'first round', target: 'target', phases: 'number of phases' }[key];
+    const what = { last: 'last round', start: 'first round', target: 'target', phases: 'number of phases', from: 'start score' }[key];
     return `<div class="stepper"><button type="button" class="step" data-step="${key}" data-by="-1" aria-label="Lower ${what}">−</button>
       <input class="step-in" inputmode="numeric" data-in="${key}" aria-labelledby="lbl-${key}" value="${value}" maxlength="6">
       <button type="button" class="step" data-step="${key}" data-by="1" aria-label="Raise ${what}">+</button></div>`;
@@ -95,6 +99,7 @@ export async function renderGameEdit(root, ctx) {
 
   function paint() {
     view.querySelector('[data-target-row]').hidden = g.end.kind !== 'target';
+    view.querySelector('[data-target-help]').textContent = readNum('target', 100) < readNum('from', 0) ? 'Counting down to this' : 'First to reach this';
     const ranged = g.rounds.show || g.end.kind === 'lastRound';
     view.querySelectorAll('[data-range-row]').forEach((r) => { r.hidden = !ranged; });
     view.querySelector('[data-label-row]').hidden = !g.rounds.show;
@@ -119,12 +124,16 @@ export async function renderGameEdit(root, ctx) {
     const s = e.target.closest('[data-step]');
     if (!s) return;
     const key = s.dataset.step;
-    const by = Number(s.dataset.by) * (key === 'target' ? 10 : 1);
+    // Big targets go up in tens; a count-down target (like Trash's) in ones.
+    const tens = key === 'target' && readNum('target', 100) >= readNum('from', 0);
+    const by = Number(s.dataset.by) * (tens ? 10 : 1);
     const input = view.querySelector(`[data-in="${key}"]`);
-    const min = key === 'target' || key === 'phases' ? 1 : key === 'start' ? 0 : readNum('start', 1);
-    const max = key === 'target' ? M.MAX_ABS : key === 'phases' ? M.MAX_PHASES : 999;
+    const min = key === 'target' || key === 'from' ? -M.MAX_ABS : key === 'phases' ? 1 : key === 'start' ? 0 : readNum('start', 1);
+    const max = key === 'target' || key === 'from' ? M.MAX_ABS : key === 'phases' ? M.MAX_PHASES : 999;
     input.value = String(M.clampInt(readNum(key, 0) + by, min, max));
+    paint();
   });
+  view.addEventListener('input', (e) => { if (e.target.closest('[data-in="target"], [data-in="from"]')) paint(); });
   view.querySelector('[data-quick]').addEventListener('click', (e) => { if (e.target.closest('[data-edit-quick]')) quickSheet(); });
 
   function quickSheet() {
@@ -160,6 +169,7 @@ export async function renderGameEdit(root, ctx) {
   function collect() {
     g.name = view.querySelector('#gname').value;
     g.end.target = readNum('target', 100);
+    g.startScore = readNum('from', 0);
     g.rounds.start = readNum('start', 1);
     const ranged = g.rounds.show || g.end.kind === 'lastRound';
     g.rounds.end = ranged ? readNum('last', g.rounds.start) : null;
@@ -172,7 +182,7 @@ export async function renderGameEdit(root, ctx) {
     } catch (e) {
       const msgs = {
         'No name': 'Please give the game a name.', 'Bad last round': 'The last round must be the same as or after the first.',
-        'Bad target': 'The target must be a whole number from 1.', 'Needs round names': 'Add the round names, separated by commas.',
+        'Bad target': 'The target must be from 1, or below the start score to count down.', 'Bad start score': 'The start score must be a whole number.', 'Needs round names': 'Add the round names, separated by commas.',
         'Bad phases': `The number of phases must be from 1 to ${M.MAX_PHASES}.`,
       };
       view.querySelector('[data-msg]').textContent = msgs[e.message] || 'Please check the numbers.';

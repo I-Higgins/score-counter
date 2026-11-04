@@ -2,7 +2,7 @@
 // phase tracker, Fishbowl's named rounds, Finish game, and adding new built-ins on update.
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { availableBrowsers, server, newPage, axe, smallTargets, IPHONE, IPAD_PORTRAIT, IPAD_LANDSCAPE, quickGame, typeScore } from './helpers.mjs';
+import { availableBrowsers, server, newPage, axe, smallTargets, IPHONE, IPAD_PORTRAIT, IPAD_LANDSCAPE, quickGame, typeScore, playRound } from './helpers.mjs';
 
 const browsers = await availableBrowsers();
 let srv;
@@ -29,13 +29,13 @@ async function phaseHand(page, scores, made = []) {
 
 for (const { name, type } of browsers) {
   describe(`${name}: games`, () => {
-    test('all eight built-ins are listed, each with How to play and a Wikipedia link', async () => {
+    test('all nine built-ins are listed, each with How to play', async () => {
       const { browser, page, errors } = await newPage(type, srv.url, { viewport: IPHONE });
       try {
         await page.goto(srv.url + '#/new/quick');
         await page.waitForSelector('.game-row');
         const names = await page.locator('.game-row strong').allTextContents();
-        for (const g of ['5 Crowns', 'Dutch Blitz', 'Phase 10', 'Skip-Bo', 'Uno', '500', 'President (Scum)', 'Fishbowl']) assert.ok(names.includes(g), `${g} in ${names}`);
+        for (const g of ['5 Crowns', 'Dutch Blitz', 'Phase 10', 'Skip-Bo', 'Uno', '500', 'President (Scum)', 'Fishbowl', 'Trash']) assert.ok(names.includes(g), `${g} in ${names}`);
         await page.getByRole('button', { name: 'How to play 500' }).click();
         const dlg = page.getByRole('dialog');
         await dlg.getByRole('heading', { name: 'Getting started' }).waitFor();
@@ -143,6 +143,53 @@ for (const { name, type } of browsers) {
       } finally { await browser.close(); }
     });
 
+    test('Trash: everyone starts on 10, −1 each time you get out, down to 4 wins', async () => {
+      const { browser, page, errors } = await newPage(type, srv.url, { viewport: IPHONE });
+      try {
+        await quickGame(page, srv.url, ['Ann', 'Ben'], 'Trash');
+        assert.deepEqual(await page.locator('.c-total').allTextContents(), ['10', '10']);
+        await page.locator('[data-act="menu"]').click();
+        await page.getByRole('button', { name: 'How to play Trash' }).click();
+        const dlg = page.getByRole('dialog');
+        await dlg.getByText('Everyone starts on 10.', { exact: false }).first().waitFor();
+        assert.equal(await dlg.getByRole('link', { name: 'Full rules on Wikipedia' }).count(), 0, 'no article, so no link');
+        await dlg.getByRole('button', { name: 'Done' }).click();
+        await page.waitForFunction(() => !document.querySelector('.scrim'));
+        // Ann gets out with the quick button, then by typing −1, five more times.
+        await page.locator('.card', { hasText: 'Ann' }).locator('[data-quick]').click();
+        await page.getByRole('button', { name: /^(Minus|−)\s?1 for Ann$/ }).click();
+        await page.getByRole('button', { name: 'Done' }).click();
+        await playRound(page, {});
+        assert.deepEqual(await page.locator('.c-total').allTextContents(), ['9', '10'], 'Ann on 9 cards leads');
+        for (let i = 0; i < 4; i++) await playRound(page, { Ann: -1 });
+        assert.equal(await page.locator('.card', { hasText: 'Ann' }).locator('.c-total').textContent(), '5');
+        await playRound(page, { Ann: -1 });
+        await page.getByRole('heading', { name: 'Ann wins' }).waitFor();
+        await page.getByRole('rowheader', { name: 'Start' }).waitFor();
+        assert.deepEqual(errors, []);
+      } finally { await browser.close(); }
+    });
+
+    test('editor: a start score and a count-down target', async () => {
+      const { browser, page } = await newPage(type, srv.url, { viewport: IPHONE });
+      try {
+        await page.goto(srv.url + '#/games');
+        await page.getByRole('link', { name: 'Edit Trash' }).click();
+        const target = page.getByRole('textbox', { name: 'Target score' });
+        assert.equal(await page.getByRole('textbox', { name: 'Start score' }).inputValue(), '10');
+        assert.equal(await target.inputValue(), '4');
+        await page.getByText('Counting down to this').waitFor();
+        for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Lower target' }).click();
+        assert.equal(await target.inputValue(), '0', 'counts down in ones');
+        await page.getByRole('button', { name: 'Save' }).click();
+        await page.waitForFunction(() => location.hash === '#/games');
+        await page.getByRole('link', { name: 'Edit Trash' }).click();
+        await target.fill('10');
+        await page.getByRole('button', { name: 'Save' }).click();
+        await page.getByText('below the start score').waitFor();
+      } finally { await browser.close(); }
+    });
+
     test('accessibility of the new screens: How to play, Phase 10, named rounds, Games', async () => {
       const combos = [
         [IPHONE, { theme: 'dark', textSize: 'normal' }],
@@ -163,7 +210,7 @@ for (const { name, type } of browsers) {
           await page.goto(srv.url + '#/games');
           await page.waitForSelector('#app[data-route="/games"] .list-row');
           await check('games');
-          for (const g of ['500', 'Phase 10']) {
+          for (const g of ['500', 'Phase 10', 'Trash']) {
             await page.getByRole('button', { name: `How to play ${g}`, exact: true }).click();
             await page.getByRole('dialog').waitFor();
             await check(`how to play ${g}`);
@@ -173,6 +220,9 @@ for (const { name, type } of browsers) {
           await page.goto(srv.url + '#/game/preset-fishbowl');
           await page.waitForSelector('#gnames');
           await check('fishbowl editor');
+          await page.goto(srv.url + '#/game/preset-trash');
+          await page.getByText('Counting down to this').waitFor();
+          await check('trash editor');
           await quickGame(page, srv.url, ['Ann', 'Ben', 'Cat'], 'Phase 10');
           await check('phase 10 scoreboard');
           await page.locator('[data-end]').click();

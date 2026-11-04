@@ -5,6 +5,7 @@
 //            rounds: { show, start, end, label: 'cardsWild'|'number'|'named', names? },
 //            marker: 'dealer'|'first'|'none', quick: [int],
 //            phases: null|int (a phase tracker, like Phase 10), notes: string,
+//            startScore: int (everyone's total before round 1, like Trash's 10 cards; 0 if missing),
 //            about?: key into game-info.js (how to play), hidden?: true (left out of New game) }
 // Match    { id, groupId|null, game (GameType snapshot), players: [{ id, name, color }] in seat order,
 //            rounds: [{ n, scores: { [playerId]: int }, made?: [playerId] }], pending: { [playerId]: int },
@@ -28,7 +29,7 @@ export const PALETTE = [
 export const COLOURS = PALETTE.map(([k]) => k);
 
 // Built-in games. `about` links each to its how-to-play text in game-info.js.
-const preset = (g) => ({ builtIn: true, phases: null, notes: '', about: g.id, ...g });
+const preset = (g) => ({ builtIn: true, phases: null, notes: '', startScore: 0, about: g.id, ...g });
 export const PRESETS = [
   preset({
     id: 'preset-5-crowns', name: '5 Crowns', winner: 'low',
@@ -78,6 +79,13 @@ export const PRESETS = [
     rounds: { show: true, start: 1, end: 3, label: 'named', names: ['Describe it', 'One word', 'Act it out'] },
     marker: 'first', quick: [],
   }),
+  // Everyone starts on 10 cards; getting out drops you one. Out with 5 cards (down to 4) wins.
+  preset({
+    id: 'preset-trash', name: 'Trash', winner: 'low',
+    end: { kind: 'target', target: 4 },
+    rounds: { show: false, start: 1, end: null, label: 'number' },
+    marker: 'dealer', quick: [-1], startScore: 10,
+  }),
 ];
 
 export function blankGame() {
@@ -85,7 +93,7 @@ export function blankGame() {
     name: '', builtIn: false, winner: 'high',
     end: { kind: 'none', target: 100 },
     rounds: { show: true, start: 1, end: 10, label: 'number' },
-    marker: 'none', quick: [5, 10], phases: null, notes: '',
+    marker: 'none', quick: [5, 10], phases: null, notes: '', startScore: 0,
   };
 }
 
@@ -131,9 +139,16 @@ export function endLabel(match) {
 }
 
 // ---------- totals, sorting, rank ----------
+/** Everyone's total before round 1. */
+export const startScore = (game) => (Number.isInteger(game.startScore) ? game.startScore : 0);
+
+/** A target below the start score counts down: the game ends when someone gets down to it. */
+export const countsDown = (game) => game.end.target < startScore(game);
+
 export function totals(match) {
   const t = {};
-  for (const p of match.players) t[p.id] = 0;
+  const s = startScore(match.game);
+  for (const p of match.players) t[p.id] = s;
   for (const r of match.rounds) for (const [id, v] of Object.entries(r.scores)) if (id in t) t[id] += v;
   return t;
 }
@@ -244,7 +259,9 @@ export function isOver(match) {
   }
   if (g.end.kind === 'target') {
     const t = totals(match);
-    return match.players.some((p) => t[p.id] >= g.end.target);
+    return countsDown(g)
+      ? match.players.some((p) => t[p.id] <= g.end.target)
+      : match.players.some((p) => t[p.id] >= g.end.target);
   }
   if (g.end.kind === 'lastRound' && g.rounds.end != null) {
     return match.rounds[match.rounds.length - 1].n >= g.rounds.end;
@@ -336,7 +353,8 @@ export function entryValue(entry) {
 // ---------- describing a game ----------
 export function describeGame(g) {
   const parts = [g.winner === 'low' ? 'Lowest wins' : 'Highest wins'];
-  if (g.end.kind === 'target') parts.push(`first to ${g.end.target}`);
+  if (startScore(g)) parts.push(`start on ${fmt(startScore(g))}`);
+  if (g.end.kind === 'target') parts.push(`first ${countsDown(g) ? 'down ' : ''}to ${fmt(g.end.target)}`);
   if (g.rounds.show && g.rounds.end != null) parts.push(`rounds ${g.rounds.start}–${g.rounds.end}`);
   else if (g.end.kind === 'lastRound' && g.rounds.end != null) parts.push(`${g.rounds.end - g.rounds.start + 1} hands`);
   if (hasPhases(g)) parts.push(`${g.phases} phases`);
@@ -347,10 +365,11 @@ export function describeGame(g) {
 
 export function ruleRows(g) {
   const phased = hasPhases(g);
-  const ends = g.end.kind === 'target' ? `First to ${g.end.target}` : g.end.kind === 'lastRound' ? `After round ${g.rounds.end}` : 'When you stop';
+  const ends = g.end.kind === 'target' ? `First ${countsDown(g) ? 'down ' : ''}to ${fmt(g.end.target)}` : g.end.kind === 'lastRound' ? `After round ${g.rounds.end}` : 'When you stop';
   return [
     ['Winner', phased ? `Most phases, then ${g.winner === 'low' ? 'lowest' : 'highest'} score` : g.winner === 'low' ? 'Lowest score' : 'Highest score'],
     ['Game ends', phased ? `When someone finishes phase ${g.phases}${g.end.kind === 'none' ? '' : ` or ${ends.toLowerCase()}`}` : ends],
+    ...(startScore(g) ? [['Everyone starts on', fmt(startScore(g))]] : []),
     ['Round counter', g.rounds.show ? `${g.rounds.start} to ${g.rounds.end ?? 'no limit'}` : 'Off'],
     ...(g.rounds.show && g.rounds.label === 'named' && g.rounds.names?.length ? [['Round names', g.rounds.names.join(', ')]] : []),
     ['Each round shows', g.marker === 'dealer' ? 'Dealer' : g.marker === 'first' ? 'First player' : 'None'],
@@ -372,7 +391,11 @@ export function sanitiseGame(raw) {
   const end = raw.end || {};
   if (!['target', 'lastRound', 'none'].includes(end.kind)) throw new BadGameError('Bad end');
   const target = end.target === undefined ? 100 : end.target;
-  if (!isInt(target) || target < 1) throw new BadGameError('Bad target');
+  if (!isInt(target)) throw new BadGameError('Bad target');
+  const from = raw.startScore ?? 0;
+  if (!isInt(from)) throw new BadGameError('Bad start score');
+  // Counting up from the start needs a target above it (>= 1, as before); counting down, any lower number.
+  if (end.kind === 'target' && (target === from || (target > from && target < 1))) throw new BadGameError('Bad target');
   const r = raw.rounds || {};
   if (typeof r.show !== 'boolean') throw new BadGameError('Bad rounds');
   const start = r.start === undefined ? 1 : r.start;
@@ -399,7 +422,7 @@ export function sanitiseGame(raw) {
     name, winner: raw.winner,
     end: { kind: end.kind, target },
     rounds: { show: r.show, start, end: rEnd, label, ...(names ? { names } : {}) },
-    marker: raw.marker, quick: [...quick], phases, notes,
+    marker: raw.marker, quick: [...quick], phases, notes, startScore: from,
   };
   // Only a short key into the app's own how-to-play text: never text or a link from outside.
   if (typeof raw.about === 'string' && /^preset-[a-z0-9-]{1,30}$/.test(raw.about)) out.about = raw.about;

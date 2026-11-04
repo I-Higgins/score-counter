@@ -1,6 +1,6 @@
 {
   "name": "score-counter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "A free, offline, installable web app (PWA). Vanilla HTML/CSS/JS, no build step, data stays on the device.",
   "license": "MIT",
