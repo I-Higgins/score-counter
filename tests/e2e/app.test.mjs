@@ -126,6 +126,17 @@ for (const { name, type } of browsers) {
       } finally { await browser.close(); await own.close().catch(() => {}); }
     });
 
+    test('a first install never shows the update banner', async () => {
+      const own = await server();
+      const { browser, page } = await newPage(type, own.url, { viewport: IPHONE });
+      try {
+        await waitForServiceWorker(page);
+        await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
+        await page.waitForTimeout(1500);
+        assert.equal(await page.locator('.banner').count(), 0, 'no update exists, so no banner');
+      } finally { await browser.close(); await own.close().catch(() => {}); }
+    });
+
     test('a new version shows the banner; refreshing loads it', async () => {
       const own = await server();
       const { browser, page } = await newPage(type, own.url);
