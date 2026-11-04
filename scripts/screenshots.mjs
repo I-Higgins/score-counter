@@ -85,6 +85,33 @@ for (const vpName of ONLY) {
     await shot('06-group');
     await page.goto(url + '#/help');
     await shot('10-help');
+    // 0.2: Games list, How to play, named rounds in the editor, Phase 10.
+    await page.goto(url + '#/games');
+    await page.waitForSelector('#app[data-route="/games"] .list-row');
+    await shot('11-games');
+    await page.getByRole('button', { name: 'How to play 500', exact: true }).click();
+    await page.getByRole('dialog').waitFor();
+    await shot('12-how-to-play');
+    await page.getByRole('dialog').locator('.how-table-wrap').scrollIntoViewIfNeeded();
+    await shot('12b-how-to-play-table');
+    await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
+    await page.goto(url + '#/game/preset-fishbowl');
+    await page.waitForSelector('#gnames');
+    await shot('05b-game-editor-fishbowl');
+    await page.locator('#gnotes').scrollIntoViewIfNeeded();
+    await shot('05c-game-editor-notes');
+    await page.goto(url + '#/new');
+    await page.locator('.game-row', { hasText: 'Phase 10' }).first().click();
+    await page.locator('[data-start]').click();
+    await page.waitForSelector('.card');
+    await page.locator('[data-end]').click();
+    await page.waitForSelector('.keypad');
+    for (const n of ['Kerryn', 'Marlies']) await page.getByRole('button', { name: `${n} made phase` }).click();
+    await shot('13b-phase-10-hand');
+    for (let i = 0; i < 5; i++) await page.locator('[data-next]').click();
+    await page.waitForSelector('.card');
+    await page.waitForTimeout(1200);
+    await shot('13-phase-10-scoreboard');
     await context.close();
   }
 }

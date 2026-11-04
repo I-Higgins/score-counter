@@ -16,6 +16,8 @@ export async function renderGameEdit(root, ctx) {
   if (!game) { root.replaceChildren(errorState('That game isn’t here any more', 'It may have been deleted.')); return; }
   const g = JSON.parse(JSON.stringify(game));
   if (g.rounds.end == null) g.rounds.end = 10;
+  let phaseCount = M.hasPhases(g) ? g.phases : 10;
+  let shown = !g.hidden;
   const back = ctx.prev === '/games' ? '#/games' : '#/new';
 
   const view = el(`<main class="screen editor" aria-labelledby="page-title">
@@ -30,7 +32,7 @@ export async function renderGameEdit(root, ctx) {
     <div class="panel panel-rows">
       <div class="prow" data-target-row>
         <span class="prow-label" id="lbl-target">Target score</span>
-        ${stepper('target', 'target', g.end.target)}
+        ${stepper('target', g.end.target)}
       </div>
       <div class="prow">
         <span class="prow-label">Quick buttons</span>
@@ -42,16 +44,36 @@ export async function renderGameEdit(root, ctx) {
       </div>
       <div class="prow" data-range-row>
         <span class="prow-label" id="lbl-start" data-start-label>First round</span>
-        ${stepper('start', 'start', g.rounds.start)}
+        ${stepper('start', g.rounds.start)}
       </div>
       <div class="prow" data-range-row>
         <span class="prow-label" id="lbl-last" data-last-label>Last round</span>
-        ${stepper('last', 'last', g.rounds.end)}
+        ${stepper('last', g.rounds.end)}
       </div>
       <div class="prow prow-col" data-label-row>
-        ${segHtml('label', 'Round label', [['number', 'Round number'], ['cardsWild', 'Cards and wild card']], g.rounds.label)}
+        ${segHtml('label', 'Round label', [['number', 'Round number'], ['cardsWild', 'Cards and wild card'], ['named', 'Names']], g.rounds.label)}
+      </div>
+      <div class="prow prow-col" data-names-row>
+        <label class="prow-label" for="gnames">Round names<span class="prow-help">In order, separated by commas</span></label>
+        <input id="gnames" class="text-input" type="text" autocomplete="off" maxlength="600" value="${esc((g.rounds.names || []).join(', '))}" placeholder="For example, Describe it, One word, Act it out">
       </div>
     </div>
+    <div class="panel panel-rows">
+      <div class="prow">
+        <span class="prow-label"><span id="lbl-phases-on">Phase tracker</span><span class="prow-help">Like Phase 10: most phases wins</span></span>
+        ${switchHtml('sw-phases', 'lbl-phases-on', M.hasPhases(g))}
+      </div>
+      <div class="prow" data-phases-row>
+        <span class="prow-label" id="lbl-phases">Number of phases</span>
+        ${stepper('phases', phaseCount)}
+      </div>
+      <div class="prow">
+        <span class="prow-label"><span id="lbl-shown">Show in New game</span><span class="prow-help">Off hides it from the list</span></span>
+        ${switchHtml('sw-shown', 'lbl-shown', shown)}
+      </div>
+    </div>
+    <div class="field"><label class="label" for="gnotes">Notes</label>
+      <textarea id="gnotes" class="text-input notes-input" rows="4" maxlength="${M.MAX_NOTES}" placeholder="House rules or reminders. Shown in How to play.">${esc(g.notes || '')}</textarea></div>
     <p class="field-msg" data-msg role="status"></p>
     <div class="grow"></div>
     ${isNew ? '' : `<div class="btn-pair"><button type="button" class="btn btn-secondary" data-dup>Duplicate</button>
@@ -59,10 +81,11 @@ export async function renderGameEdit(root, ctx) {
     <button type="button" class="btn btn-primary btn-end" data-save>Save</button>
   </main>`);
 
-  function stepper(key, label, value) {
-    return `<div class="stepper"><button type="button" class="step" data-step="${key}" data-by="-1" aria-label="Lower ${label === 'last' ? 'last round' : label === 'start' ? 'first round' : 'target'}">−</button>
+  function stepper(key, value) {
+    const what = { last: 'last round', start: 'first round', target: 'target', phases: 'number of phases' }[key];
+    return `<div class="stepper"><button type="button" class="step" data-step="${key}" data-by="-1" aria-label="Lower ${what}">−</button>
       <input class="step-in" inputmode="numeric" data-in="${key}" aria-labelledby="lbl-${key}" value="${value}" maxlength="6">
-      <button type="button" class="step" data-step="${key}" data-by="1" aria-label="Raise ${label === 'last' ? 'last round' : label === 'start' ? 'first round' : 'target'}">+</button></div>`;
+      <button type="button" class="step" data-step="${key}" data-by="1" aria-label="Raise ${what}">+</button></div>`;
   }
 
   function readNum(key, fallback) {
@@ -75,6 +98,8 @@ export async function renderGameEdit(root, ctx) {
     const ranged = g.rounds.show || g.end.kind === 'lastRound';
     view.querySelectorAll('[data-range-row]').forEach((r) => { r.hidden = !ranged; });
     view.querySelector('[data-label-row]').hidden = !g.rounds.show;
+    view.querySelector('[data-names-row]').hidden = !g.rounds.show || g.rounds.label !== 'named';
+    view.querySelector('[data-phases-row]').hidden = !M.hasPhases(g);
     const word = g.rounds.show ? 'round' : 'hand';
     view.querySelector('[data-start-label]').textContent = `First ${word}`;
     view.querySelector('[data-last-label]').textContent = `Last ${word}`;
@@ -86,16 +111,19 @@ export async function renderGameEdit(root, ctx) {
   bindSeg(view, 'winner', (v) => { g.winner = v; });
   bindSeg(view, 'end', (v) => { g.end.kind = v; paint(); });
   bindSeg(view, 'marker', (v) => { g.marker = v; });
-  bindSeg(view, 'label', (v) => { g.rounds.label = v; });
+  bindSeg(view, 'label', (v) => { g.rounds.label = v; paint(); });
   bindSwitch(view, 'sw-rounds', (on) => { g.rounds.show = on; paint(); });
+  bindSwitch(view, 'sw-phases', (on) => { g.phases = on ? M.clampInt(readNum('phases', phaseCount), 1, M.MAX_PHASES) : null; paint(); });
+  bindSwitch(view, 'sw-shown', (on) => { shown = on; });
   view.addEventListener('click', (e) => {
     const s = e.target.closest('[data-step]');
     if (!s) return;
     const key = s.dataset.step;
     const by = Number(s.dataset.by) * (key === 'target' ? 10 : 1);
     const input = view.querySelector(`[data-in="${key}"]`);
-    const min = key === 'target' ? 1 : key === 'start' ? 0 : readNum('start', 1);
-    input.value = String(M.clampInt(readNum(key, 0) + by, min, key === 'target' ? M.MAX_ABS : 999));
+    const min = key === 'target' || key === 'phases' ? 1 : key === 'start' ? 0 : readNum('start', 1);
+    const max = key === 'target' ? M.MAX_ABS : key === 'phases' ? M.MAX_PHASES : 999;
+    input.value = String(M.clampInt(readNum(key, 0) + by, min, max));
   });
   view.querySelector('[data-quick]').addEventListener('click', (e) => { if (e.target.closest('[data-edit-quick]')) quickSheet(); });
 
@@ -135,10 +163,18 @@ export async function renderGameEdit(root, ctx) {
     g.rounds.start = readNum('start', 1);
     const ranged = g.rounds.show || g.end.kind === 'lastRound';
     g.rounds.end = ranged ? readNum('last', g.rounds.start) : null;
+    if (g.rounds.label === 'named') g.rounds.names = view.querySelector('#gnames').value.split(',');
+    else delete g.rounds.names;
+    if (g.phases != null) { phaseCount = readNum('phases', phaseCount); g.phases = phaseCount; }
+    g.notes = view.querySelector('#gnotes').value;
     try {
       return M.sanitiseGame(g);
     } catch (e) {
-      const msgs = { 'No name': 'Please give the game a name.', 'Bad last round': 'The last round must be the same as or after the first.', 'Bad target': 'The target must be a whole number from 1.' };
+      const msgs = {
+        'No name': 'Please give the game a name.', 'Bad last round': 'The last round must be the same as or after the first.',
+        'Bad target': 'The target must be a whole number from 1.', 'Needs round names': 'Add the round names, separated by commas.',
+        'Bad phases': `The number of phases must be from 1 to ${M.MAX_PHASES}.`,
+      };
       view.querySelector('[data-msg]').textContent = msgs[e.message] || 'Please check the numbers.';
       return null;
     }
@@ -147,7 +183,7 @@ export async function renderGameEdit(root, ctx) {
   view.querySelector('[data-save]').addEventListener('click', async () => {
     const clean = collect();
     if (!clean) return;
-    const rec = { ...clean, id: game.id || newId(), builtIn: !!game.builtIn, createdAt: game.createdAt || Date.now() };
+    const rec = { ...clean, id: game.id || newId(), builtIn: !!game.builtIn, createdAt: game.createdAt || Date.now(), ...(shown ? {} : { hidden: true }) };
     data.save('games', rec);
     // The game in progress follows rule changes (e.g. a new target).
     const cur = await data.currentMatch().catch(() => null);
@@ -189,7 +225,7 @@ export function shareSheet(game) {
   const link = `${location.origin}${location.pathname}#game=${M.encodeShare(game)}`;
   const canShare = !!navigator.share;
   const dlg = openSheet(`<div class="sheet-kicker">Share</div><h2 id="sh-t">Share “${esc(game.name)}”</h2>
-    <p class="privacy-note">The link holds only the rules. No players, scores or history. It works offline once the app is installed.</p>
+    <p class="privacy-note">The link holds only the rules and notes. No players, scores or history. It works offline once the app is installed.</p>
     <label class="sr-only" for="sh-link">Link</label>
     <input id="sh-link" class="text-input" readonly value="${esc(link)}">
     ${canShare ? '<button type="button" class="btn btn-primary btn-end" data-act="share">Share link</button>' : ''}

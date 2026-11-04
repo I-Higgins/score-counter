@@ -24,8 +24,10 @@ export async function renderMatch(root, ctx) {
   const name = (id) => data.displayName(match, id, group);
   const t = M.totals(match);
   const ended = !!match.endedAt;
+  const phased = M.hasPhases(match.game);
+  const done = M.phasesDone(match);
   const players = ended
-    ? M.sortOrder(match.players, t, M.defaultSort(match.game)).map((id) => match.players.find((p) => p.id === id))
+    ? M.sortOrder(match.players, t, M.defaultSort(match.game), M.phaseKey(match)).map((id) => match.players.find((p) => p.id === id))
     : match.players;
   const winIds = match.winnerIds || [];
   const hand = !match.game.rounds.show;
@@ -39,7 +41,7 @@ export async function renderMatch(root, ctx) {
     head = `<div class="winner" style="--pc: var(--p-${esc(first ? first.color : 'silver')})">
       ${icon('crown', 40)}
       <div><h1 id="page-title">${esc(wins)}</h1>
-      <span>${M.fmt(t[winIds[0]] ?? 0)} points · ${match.game.winner === 'low' ? 'lowest' : 'highest'} score wins</span></div>
+      <span>${phased ? `${done[winIds[0]] ?? 0} of ${match.game.phases} phases · ${M.fmt(t[winIds[0]] ?? 0)} points` : `${M.fmt(t[winIds[0]] ?? 0)} points · ${match.game.winner === 'low' ? 'lowest' : 'highest'} score wins`}</span></div>
     </div>`;
   } else {
     head = headHtml({ back: backHref, backLabel: 'Back to the game', title: 'Full table', sub: `${match.game.name} · so far` });
@@ -57,10 +59,10 @@ export async function renderMatch(root, ctx) {
         <thead><tr><th scope="col" class="rd">${hand ? 'Hand' : 'Rd'}</th>${players.map((p) => `<th scope="col"><span class="th-name">${dot(p.color)}${esc(name(p.id))}</span></th>`).join('')}</tr></thead>
         <tbody>${match.rounds.map((r, i) => `<tr>
           <th scope="row" class="rd"><button type="button" class="rd-btn" data-edit="${i}" aria-label="Fix ${hand ? 'hand' : 'round'} ${r.n}">${r.n}</button></th>
-          ${players.map((p) => `<td class="${(r.scores[p.id] || 0) === 0 ? 'zero' : ''}">${M.fmt(r.scores[p.id] || 0)}</td>`).join('')}</tr>`).join('')}</tbody>
-        <tfoot><tr><th scope="row" class="rd">Total</th>${players.map((p) => `<td class="${winIds.includes(p.id) ? 'win' : ''}"${winIds.includes(p.id) ? ` style="--pc: var(--p-${esc(p.color)})"` : ''}>${M.fmt(t[p.id])}</td>`).join('')}</tr></tfoot>
+          ${players.map((p) => `<td class="${(r.scores[p.id] || 0) === 0 ? 'zero' : ''}">${M.fmt(r.scores[p.id] || 0)}${phased && (r.made || []).includes(p.id) ? `<span class="made" aria-hidden="true"> ✓</span><span class="sr-only">, made phase</span>` : ''}</td>`).join('')}</tr>`).join('')}</tbody>
+        <tfoot>${phased ? `<tr><th scope="row" class="rd">Phases</th>${players.map((p) => `<td>${done[p.id]}</td>`).join('')}</tr>` : ''}<tr><th scope="row" class="rd">Total</th>${players.map((p) => `<td class="${winIds.includes(p.id) ? 'win' : ''}"${winIds.includes(p.id) ? ` style="--pc: var(--p-${esc(p.color)})"` : ''}>${M.fmt(t[p.id])}</td>`).join('')}</tr></tfoot>
       </table></div>
-      <span class="meta">Tap a ${hand ? 'hand' : 'round'} number to fix a score${players.length >= 5 ? ' · Swipe the table sideways for more players' : ''}</span>`
+      <span class="meta">${phased ? '✓ made their phase · ' : ''}Tap a ${hand ? 'hand' : 'round'} number to fix a score${players.length >= 5 ? ' · Swipe the table sideways for more players' : ''}</span>`
     : `<div class="empty-state"><p><strong>No ${hand ? 'hands' : 'rounds'} saved yet</strong>They’ll show here after you tap ${esc(M.endLabel(match))}.</p></div>`}
     <div class="grow"></div>
     <div class="stack">
@@ -82,6 +84,7 @@ export async function renderMatch(root, ctx) {
         <label for="fix-${esc(p.id)}">${dot(p.color)}<span>${esc(name(p.id))}</span></label>
         <button type="button" class="btn btn-secondary fix-sign" data-sign="${esc(p.id)}" aria-label="Make ${esc(name(p.id))}’s score negative or positive">±</button>
         <input class="text-input fix-in" id="fix-${esc(p.id)}" inputmode="numeric" autocomplete="off" maxlength="7" value="${esc(String(r.scores[p.id] || 0))}">
+        ${phased ? `<button type="button" class="btn btn-secondary fix-made" data-made="${esc(p.id)}" aria-pressed="${(r.made || []).includes(p.id)}" aria-label="Made phase, ${esc(name(p.id))}">Made phase</button>` : ''}
       </div>`).join('')}</div>
       <p class="field-msg" data-msg role="status"></p>
       <div class="row"><button type="button" class="btn btn-quiet btn-dialog" data-r="0">Cancel</button>
@@ -92,6 +95,9 @@ export async function renderMatch(root, ctx) {
       const v = input.value.trim();
       input.value = v.startsWith('-') || v.startsWith('−') ? v.slice(1) : `-${v}`;
     }));
+    dlg.el.querySelectorAll('[data-made]').forEach((b) => b.addEventListener('click', () => {
+      b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+    }));
     dlg.el.querySelector('[data-r="0"]').addEventListener('click', () => dlg.close());
     dlg.el.querySelector('[data-r="1"]').addEventListener('click', () => {
       const scores = {};
@@ -100,8 +106,9 @@ export async function renderMatch(root, ctx) {
         if (raw !== '' && !/^-?\d{1,6}$/.test(raw)) { dlg.el.querySelector('[data-msg]').textContent = `Please use whole numbers for ${name(p.id)}.`; return; }
         scores[p.id] = raw === '' || raw === '-' ? 0 : parseInt(raw, 10);
       }
-      if (isCurrent) data.change(match, (m) => M.editRound(m, i, scores));
-      else data.save('matches', M.editRound(match, i, scores));
+      const made = phased ? [...dlg.el.querySelectorAll('[data-made][aria-pressed="true"]')].map((b) => b.dataset.made) : null;
+      if (isCurrent) data.change(match, (m) => M.editRound(m, i, scores, made));
+      else data.save('matches', M.editRound(match, i, scores, made));
       dlg.close();
       announce(`${word[0].toUpperCase()}${word.slice(1)} ${r.n} fixed`);
       data.flush().then(() => ctx.refresh());

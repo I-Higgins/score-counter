@@ -7,6 +7,7 @@ import { el, esc, announce } from '../ui.js';
 import { setUpdateBannerAllowed } from '../pwa.js';
 import { keepAwake } from '../wake.js';
 import { errorState, setFlash } from './common.js';
+import { phaseText } from '../game-info.js';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '±', '0', '⌫'];
 
@@ -28,10 +29,10 @@ export async function renderRound(root, ctx) {
   const ids = match.players.map((p) => p.id);
   let entry = match.entry;
   if (!entry || !Array.isArray(entry.order) || entry.order.slice().sort().join() !== ids.slice().sort().join()) {
-    const order = M.sortOrder(match.players, M.shownTotals(match), match.sort);
+    const order = M.sortOrder(match.players, M.shownTotals(match), match.sort, M.phaseKey(match));
     const values = {};
     for (const id of order) values[id] = match.pending[id] ? String(match.pending[id]) : (id in match.pending ? '0' : '');
-    entry = { order, values, sel: 0, fresh: true };
+    entry = { order, values, sel: 0, fresh: true, made: [] };
     match = data.change(match, (m) => ({ ...m, entry }), { undoable: false });
   }
   const totals = M.totals(match);
@@ -39,6 +40,9 @@ export async function renderRound(root, ctx) {
   const colour = (id) => match.players.find((p) => p.id === id).color;
   const hand = !match.game.rounds.show;
   const title = M.endLabel(match);
+  const phased = M.hasPhases(match.game);
+  const done = M.phasesDone(match);
+  const made = () => (Array.isArray(entry.made) ? entry.made : []);
 
   const view = el(`<main class="screen round" aria-labelledby="re-title">
     <header class="head">
@@ -69,17 +73,21 @@ export async function renderRound(root, ctx) {
       const v = entry.values[id] || '';
       const n = M.entryValue(v);
       const on = i === entry.sel;
-      return `<li><button type="button" class="re-row${on ? ' on' : ''}" data-i="${i}" aria-label="${esc(name(id))}, ${hand ? 'hand' : 'round'} score ${v === '' ? 'not entered' : esc(M.fmt(n))}${on ? ', editing' : ''}" aria-pressed="${on}">
+      const ph = phased ? M.phaseNow(match, id, done) : 0;
+      const got = made().includes(id);
+      const phaseBtn = phased ? `<button type="button" class="re-phase" data-made="${esc(id)}" aria-pressed="${got}" aria-label="${esc(name(id))} made phase ${ph}${phaseText(match.game, ph) ? `: ${esc(phaseText(match.game, ph))}` : ''}">
+          <span class="rp-top">${got ? icon('check', 16) : ''}Made</span><span>phase ${ph}</span></button>` : '';
+      return `<li class="${phased ? 're-li-phase' : ''}"><button type="button" class="re-row${on ? ' on' : ''}" data-i="${i}" aria-label="${esc(name(id))}, ${hand ? 'hand' : 'round'} score ${v === '' ? 'not entered' : esc(M.fmt(n))}${on ? ', editing' : ''}" aria-pressed="${on}">
         <span class="re-bar" style="--pc: var(--p-${esc(colour(id))})"></span>
         <span class="re-name"><strong>${esc(name(id))}</strong><span>Total ${M.fmt(totals[id])} → ${M.fmt(totals[id] + n)}</span></span>
         <span class="re-val">${v === '' ? '—' : esc(v.replace('-', '−'))}</span>
-      </button></li>`;
+      </button>${phaseBtn}</li>`;
     }).join('');
     const last = entry.sel >= entry.order.length - 1;
     const nextBtn = view.querySelector('[data-next]');
     if (!last) nextBtn.textContent = `Next: ${name(entry.order[entry.sel + 1])}`;
     else {
-      const after = M.saveRound(match, {});
+      const after = M.saveRound(match, {}, Date.now(), made());
       const ends = !!after.endedAt || (match.game.end.kind === 'lastRound' && match.game.rounds.end != null && M.currentRoundNumber(match) >= match.game.rounds.end);
       nextBtn.textContent = hand ? 'Save hand' : ends ? 'Save round' : `Save round · start round ${M.currentRoundNumber(match) + 1}`;
     }
@@ -108,13 +116,24 @@ export async function renderRound(root, ctx) {
     }
     const scores = Object.fromEntries(entry.order.map((id) => [id, M.entryValue(entry.values[id])]));
     const n = M.currentRoundNumber(match);
-    match = data.change(match, (m) => M.saveRound(m, scores));
+    match = data.change(match, (m) => M.saveRound(m, scores, Date.now(), made()));
     if (match.endedAt) { location.hash = `#/match/${encodeURIComponent(match.id)}`; return; }
     setFlash({ text: hand ? 'Hand saved' : `Round ${n} saved`, undoable: true });
     location.hash = '#/';
   }
 
   rows.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-made]');
+    if (t) {
+      const id = t.dataset.made;
+      const list = made().includes(id) ? made().filter((x) => x !== id) : [...made(), id];
+      entry = { ...entry, made: list };
+      save();
+      paint();
+      rows.querySelector(`[data-made="${CSS.escape(id)}"]`)?.focus();
+      announce(`${name(id)}: ${list.includes(id) ? 'made' : 'not made'} phase ${M.phaseNow(match, id, done)}`);
+      return;
+    }
     const b = e.target.closest('[data-i]');
     if (!b) return;
     entry = { ...entry, sel: Number(b.dataset.i), fresh: true };

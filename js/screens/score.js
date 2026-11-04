@@ -3,10 +3,11 @@
 import * as M from '../model.js';
 import * as data from '../data.js';
 import { icon } from '../icons.js';
-import { el, esc, announce, openSheet, toast } from '../ui.js';
+import { el, esc, announce, openSheet, toast, confirmDialog } from '../ui.js';
 import { getSettings, SORT_DELAYS, reducedMotion } from '../settings.js';
 import { keepAwake } from '../wake.js';
 import { errorState, takeFlash } from './common.js';
+import { showGameInfo } from './game-info-sheet.js';
 
 const SORT_LABELS = { asc: 'Lowest first', desc: 'Highest first', manual: 'Manual order' };
 const NEXT_SORT = { asc: 'desc', desc: 'manual', manual: 'asc' };
@@ -24,7 +25,9 @@ export async function renderScore(root, ctx, match) {
   const delay = SORT_DELAYS[settings.sortDelay] || 900;
 
   // Display order and ranks only change when a re-sort runs.
-  let order = M.sortOrder(match.players, M.shownTotals(match), match.sort);
+  // Phase games (Phase 10) rank by phases finished first; saved rounds only, so it's fixed during a hand.
+  const phased = M.hasPhases(match.game);
+  let order = M.sortOrder(match.players, M.shownTotals(match), match.sort, M.phaseKey(match));
   let rankMap = {};
   let leadSet = new Set();
   let timer = null;
@@ -60,7 +63,7 @@ export async function renderScore(root, ctx, match) {
     return `<li class="card" data-id="${esc(p.id)}">
       <a class="c-head" href="#/player/${encodeURIComponent(p.id)}">
         <span class="c-rank" aria-hidden="true"></span>
-        <span class="c-namewrap"><span class="c-name"></span><span class="c-badges" aria-hidden="true"></span></span>
+        <span class="c-namewrap"><span class="c-name"></span><span class="c-badges" aria-hidden="true"></span>${phased ? '<span class="c-phase" aria-hidden="true"></span>' : ''}</span>
       </a>
       <button type="button" class="plate" data-d="-1">${icon('minus', 26)}</button>
       ${quick ? `<button type="button" class="c-score c-score-btn" data-quick>${scoreInner}</button>` : `<div class="c-score">${scoreInner}</div>`}
@@ -74,8 +77,9 @@ export async function renderScore(root, ctx, match) {
 
   function computeRanks() {
     const shown = M.shownTotals(match);
-    rankMap = M.ranks(order, shown, match.sort);
-    leadSet = new Set(M.leaders(match.players, shown, match.game.winner));
+    const phases = M.phaseKey(match);
+    rankMap = M.ranks(order, shown, match.sort, phases);
+    leadSet = new Set(M.leaders(match.players, shown, match.game.winner, phases));
   }
 
   /** Update everything in place (no reordering). */
@@ -106,6 +110,7 @@ export async function renderScore(root, ctx, match) {
     }
     view.querySelector('[data-end]').innerHTML = `${esc(M.endLabel(match))}${icon('chevron-right', 20)}`;
 
+    const done = M.phaseKey(match);
     for (const li of list.children) {
       const id = li.dataset.id;
       const p = match.players.find((x) => x.id === id);
@@ -119,7 +124,11 @@ export async function renderScore(root, ctx, match) {
       const badges = [lead ? '<span class="badge badge-lead">Leading</span>' : '', id === marker ? `<span class="badge badge-mark">${markerWord === 'Dealer' ? 'Dealer' : 'First'}</span>` : ''].join('');
       const b = li.querySelector('.c-badges');
       if (b.innerHTML !== badges) b.innerHTML = badges;
-      li.querySelector('.c-head').setAttribute('aria-label', `${nm}, position ${rankMap[id]}${lead ? ', leading' : ''}${id === marker ? (match.game.marker === 'dealer' ? ', dealer' : ', first player') : ''}. Edit player`);
+      const ph = done ? M.phaseNow(match, id, done) : 0;
+      if (done) {
+        li.querySelector('.c-phase').textContent = `Phase ${ph}`;
+      }
+      li.querySelector('.c-head').setAttribute('aria-label', `${nm}, position ${rankMap[id]}${done ? `, on phase ${ph}` : ''}${lead ? ', leading' : ''}${id === marker ? (match.game.marker === 'dealer' ? ', dealer' : ', first player') : ''}. Edit player`);
       const t = li.querySelector('.c-total');
       t.textContent = M.fmt(total);
       t.classList.toggle('neg', total < 0);
@@ -131,7 +140,7 @@ export async function renderScore(root, ctx, match) {
       li.querySelector('[data-d="-1"]').setAttribute('aria-label', `Minus one for ${nm} this round`);
       li.querySelector('[data-d="1"]').setAttribute('aria-label', `Plus one for ${nm} this round`);
     }
-    const fresh = M.sortOrder(match.players, shown, match.sort);
+    const fresh = M.sortOrder(match.players, shown, match.sort, M.phaseKey(match));
     view.querySelector('[data-resorting]').textContent = timer && fresh.join() !== order.join() ? 'Re-sorting…' : '';
     paintSoFar(shown);
   }
@@ -159,7 +168,7 @@ export async function renderScore(root, ctx, match) {
   function reorder() {
     clearTimeout(timer); timer = null; sortWaiting = false;
     const shown = M.shownTotals(match);
-    const next = M.sortOrder(match.players, shown, match.sort);
+    const next = M.sortOrder(match.players, shown, match.sort, M.phaseKey(match));
     const moved = next.filter((id, i) => order[i] !== id);
     order = next;
     computeRanks();
@@ -238,7 +247,7 @@ export async function renderScore(root, ctx, match) {
     if (!back) return;
     match = back;
     if (match.players.map((p) => p.id).sort().join() !== order.slice().sort().join()) {
-      order = M.sortOrder(match.players, M.shownTotals(match), match.sort);
+      order = M.sortOrder(match.players, M.shownTotals(match), match.sort, M.phaseKey(match));
       buildCards();
     }
     reorder();
@@ -260,7 +269,9 @@ export async function renderScore(root, ctx, match) {
       <ul class="menu-list">
         ${item('#/new', 'play', 'New game')}
         ${item(`#/match/${encodeURIComponent(match.id)}`, 'table', 'Full table')}
+        <li><button type="button" class="menu-item" data-how>${icon('info', 22)}<span>How to play ${esc(match.game.name)}</span></button></li>
         <li><button type="button" class="menu-item" data-sort>${icon('sort', 22)}<span>Sort: ${esc(SORT_LABELS[match.sort])}</span></button></li>
+        ${match.rounds.length ? `<li><button type="button" class="menu-item" data-finish>${icon('crown', 22)}<span>Finish game</span></button></li>` : ''}
         ${group ? item(`#/group/${encodeURIComponent(group.id)}`, 'people', `${group.name}: stats`) : ''}
         ${item('#/groups', 'people', 'Groups')}
         ${item('#/games', 'cards', 'Games')}
@@ -271,6 +282,25 @@ export async function renderScore(root, ctx, match) {
     dlg.el.querySelector('[data-close]').addEventListener('click', () => dlg.close());
     const s = dlg.el.querySelector('[data-sort]');
     s.addEventListener('click', () => { cycleSort(); s.querySelector('span').textContent = `Sort: ${SORT_LABELS[match.sort]}`; });
+    dlg.el.querySelector('[data-how]').addEventListener('click', async () => {
+      dlg.close();
+      // The rules as played; notes from the saved game, so edits show straight away.
+      const saved = await data.getGame(match.game.id).catch(() => null);
+      showGameInfo({ ...match.game, notes: saved ? saved.notes : match.game.notes }, { editHref: saved ? `#/game/${encodeURIComponent(saved.id)}` : null });
+    });
+    dlg.el.querySelector('[data-finish]')?.addEventListener('click', async () => {
+      dlg.close();
+      const pend = Object.values(match.pending).some(Boolean);
+      const ok = await confirmDialog({
+        title: 'Finish this game?',
+        text: `The winner is decided by the ${match.rounds.length} saved ${match.game.rounds.show ? 'rounds' : 'hands'}${pend ? '. Points tapped in this round aren’t saved yet: tap End first to keep them' : ''}. It counts in stats.`,
+        action: 'Finish game',
+      });
+      if (!ok) return;
+      match = data.change(match, (m) => M.finish(m));
+      await data.flush();
+      location.hash = `#/match/${encodeURIComponent(match.id)}`;
+    });
   }
 
   function quickSheet(id) {

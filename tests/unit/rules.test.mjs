@@ -7,10 +7,28 @@ import { appFiles } from '../../scripts/app-files.mjs';
 const text = (f) => readFileSync(f, 'utf8');
 const code = appFiles().filter((f) => /\.(js|css|html|webmanifest)$/.test(f));
 
-test('no external requests: no http(s) URLs in app code (except SVG namespaces)', () => {
+// The one exception: js/game-info.js holds the base of the Wikipedia "Full rules"
+// links. They're plain links the person taps (opening the browser), never fetched.
+const LINK_BASES = { 'js/game-info.js': ['https://en.wikipedia.org/wiki/'] };
+
+test('no external requests: no http(s) URLs in app code (except SVG namespaces and tap-to-open links)', () => {
   for (const f of code) {
-    const hits = [...text(f).matchAll(/https?:\/\/[^\s'"`)]+/g)].map((m) => m[0]).filter((u) => !u.startsWith('http://www.w3.org/'));
+    const ok = LINK_BASES[f] || [];
+    const hits = [...text(f).matchAll(/https?:\/\/[^\s'"`)]+/g)].map((m) => m[0]).filter((u) => !u.startsWith('http://www.w3.org/') && !ok.includes(u));
     assert.deepEqual(hits, [], `${f} reaches outside the app: ${hits.join(', ')}`);
+  }
+});
+
+test('external links are only ever tapped, never loaded', () => {
+  for (const f of code) {
+    if (f.endsWith('.css')) assert.ok(!/url\(\s*['"]?https?:/i.test(text(f)), `${f} loads something from the web`);
+  }
+  // The Wikipedia base must only be used in a link that opens a new browsing context.
+  const sheet = text('js/screens/game-info-sheet.js');
+  assert.match(sheet, /href="\$\{esc\(wikiUrl\(info\)\)\}" target="_blank" rel="noopener noreferrer"/);
+  for (const f of code) {
+    if (f === 'js/game-info.js' || f === 'js/screens/game-info-sheet.js') continue;
+    assert.ok(!/wikiUrl|WIKI\b/.test(text(f)), `${f} uses the Wikipedia link base`);
   }
 });
 

@@ -2,10 +2,12 @@
 //
 // GameType { id, name, builtIn, winner: 'high'|'low',
 //            end: { kind: 'target'|'lastRound'|'none', target },
-//            rounds: { show, start, end, label: 'cardsWild'|'number' },
-//            marker: 'dealer'|'first'|'none', quick: [int] }
+//            rounds: { show, start, end, label: 'cardsWild'|'number'|'named', names? },
+//            marker: 'dealer'|'first'|'none', quick: [int],
+//            phases: null|int (a phase tracker, like Phase 10), notes: string,
+//            about?: key into game-info.js (how to play), hidden?: true (left out of New game) }
 // Match    { id, groupId|null, game (GameType snapshot), players: [{ id, name, color }] in seat order,
-//            rounds: [{ n, scores: { [playerId]: int } }], pending: { [playerId]: int },
+//            rounds: [{ n, scores: { [playerId]: int }, made?: [playerId] }], pending: { [playerId]: int },
 //            markerSeat, sort: 'asc'|'desc'|'manual', entry: null|{ values, sel },
 //            startedAt, endedAt?, winnerIds?, early? }
 
@@ -14,6 +16,9 @@ export const MAX_QUICK = 8;
 export const MAX_NAME = 40;
 export const MAX_PLAYER_NAME = 20;
 export const UNDO_LIMIT = 50;
+export const MAX_NOTES = 1000;
+export const MAX_PHASES = 20;
+export const MAX_ROUND_NAME = 24;
 
 export const PALETTE = [
   ['pink', 'Pink'], ['orange', 'Orange'], ['yellow', 'Yellow'], ['purple', 'Purple'],
@@ -22,19 +27,57 @@ export const PALETTE = [
 ];
 export const COLOURS = PALETTE.map(([k]) => k);
 
+// Built-in games. `about` links each to its how-to-play text in game-info.js.
+const preset = (g) => ({ builtIn: true, phases: null, notes: '', about: g.id, ...g });
 export const PRESETS = [
-  {
-    id: 'preset-5-crowns', name: '5 Crowns', builtIn: true, winner: 'low',
+  preset({
+    id: 'preset-5-crowns', name: '5 Crowns', winner: 'low',
     end: { kind: 'lastRound', target: 100 },
     rounds: { show: true, start: 3, end: 13, label: 'cardsWild' },
     marker: 'dealer', quick: [],
-  },
-  {
-    id: 'preset-dutch-blitz', name: 'Dutch Blitz', builtIn: true, winner: 'high',
+  }),
+  preset({
+    id: 'preset-dutch-blitz', name: 'Dutch Blitz', winner: 'high',
     end: { kind: 'target', target: 100 },
     rounds: { show: false, start: 1, end: null, label: 'number' },
     marker: 'none', quick: [5, 10, -2],
-  },
+  }),
+  preset({
+    id: 'preset-phase-10', name: 'Phase 10', winner: 'low',
+    end: { kind: 'none', target: 100 },
+    rounds: { show: false, start: 1, end: null, label: 'number' },
+    marker: 'dealer', quick: [5, 10, 15, 25], phases: 10,
+  }),
+  preset({
+    id: 'preset-skip-bo', name: 'Skip-Bo', winner: 'high',
+    end: { kind: 'target', target: 500 },
+    rounds: { show: false, start: 1, end: null, label: 'number' },
+    marker: 'dealer', quick: [25, 5],
+  }),
+  preset({
+    id: 'preset-uno', name: 'Uno', winner: 'high',
+    end: { kind: 'target', target: 500 },
+    rounds: { show: false, start: 1, end: null, label: 'number' },
+    marker: 'dealer', quick: [20, 50],
+  }),
+  preset({
+    id: 'preset-500', name: '500', winner: 'high',
+    end: { kind: 'target', target: 500 },
+    rounds: { show: false, start: 1, end: null, label: 'number' },
+    marker: 'dealer', quick: [10, -10],
+  }),
+  preset({
+    id: 'preset-president', name: 'President (Scum)', winner: 'high',
+    end: { kind: 'none', target: 100 },
+    rounds: { show: false, start: 1, end: null, label: 'number' },
+    marker: 'none', quick: [1, 2, 3, 4, 5],
+  }),
+  preset({
+    id: 'preset-fishbowl', name: 'Fishbowl', winner: 'high',
+    end: { kind: 'lastRound', target: 100 },
+    rounds: { show: true, start: 1, end: 3, label: 'named', names: ['Describe it', 'One word', 'Act it out'] },
+    marker: 'first', quick: [],
+  }),
 ];
 
 export function blankGame() {
@@ -42,7 +85,7 @@ export function blankGame() {
     name: '', builtIn: false, winner: 'high',
     end: { kind: 'none', target: 100 },
     rounds: { show: true, start: 1, end: 10, label: 'number' },
-    marker: 'none', quick: [5, 10],
+    marker: 'none', quick: [5, 10], phases: null, notes: '',
   };
 }
 
@@ -66,13 +109,19 @@ export function currentRoundNumber(match) {
 
 export function hasRoundCounter(game) { return !!game.rounds.show; }
 
+/** The name of round n for games with named rounds (Fishbowl), or ''. */
+export function roundName(game, n) {
+  if (game.rounds.label !== 'named' || !Array.isArray(game.rounds.names)) return '';
+  return game.rounds.names[n - (game.rounds.start ?? 1)] || '';
+}
+
 /** "Round 5 of 13" parts, or null when the counter is off. */
 export function roundInfo(match) {
   const g = match.game;
   if (!g.rounds.show) return null;
   const n = currentRoundNumber(match);
   const of = g.end.kind === 'lastRound' && g.rounds.end != null ? g.rounds.end : null;
-  const detail = g.rounds.label === 'cardsWild' ? `${n} cards · ${wildCard(n)} wild` : '';
+  const detail = g.rounds.label === 'cardsWild' ? `${n} cards · ${wildCard(n)} wild` : roundName(g, n);
   return { n, of, detail, wild: g.rounds.label === 'cardsWild' ? wildCard(n) : null };
 }
 
@@ -98,45 +147,79 @@ export function shownTotals(match) {
 
 export function defaultSort(game) { return game.winner === 'low' ? 'asc' : 'desc'; }
 
-/** Player ids in display order. Manual = seat order. Stable for ties. */
-export function sortOrder(players, values, dir) {
+// ---------- phases (Phase 10 and the like) ----------
+export function hasPhases(game) { return Number.isInteger(game.phases) && game.phases > 0; }
+
+/** Phases each player has finished, from the saved rounds (so undo and fixes just work). */
+export function phasesDone(match) {
+  const done = {};
+  for (const p of match.players) done[p.id] = 0;
+  if (!hasPhases(match.game)) return done;
+  for (const r of match.rounds) for (const id of r.made || []) if (id in done) done[id] = Math.min(match.game.phases, done[id] + 1);
+  return done;
+}
+
+/** The phase a player is working on now (the last one once finished). */
+export function phaseNow(match, id, done = phasesDone(match)) {
+  return Math.min((done[id] || 0) + 1, match.game.phases);
+}
+
+/** What sorting and winning go by besides points: phases finished, or null. */
+export function phaseKey(match) { return hasPhases(match.game) ? phasesDone(match) : null; }
+
+/** Player ids in display order. Manual = seat order. Stable for ties. More phases always come first. */
+export function sortOrder(players, values, dir, phases = null) {
   const ids = players.map((p) => p.id);
   if (dir === 'manual') return ids;
   const seat = Object.fromEntries(ids.map((id, i) => [id, i]));
   return ids.slice().sort((a, b) => {
+    const ph = phases ? phases[b] - phases[a] : 0;
     const d = dir === 'asc' ? values[a] - values[b] : values[b] - values[a];
-    return d || seat[a] - seat[b];
+    return ph || d || seat[a] - seat[b];
   });
 }
 
 /** Shared ranks (1, 1, 3) for ids in display order. Manual order shows plain positions. */
-export function ranks(order, values, dir) {
+export function ranks(order, values, dir, phases = null) {
   const out = {};
   let rank = 0;
   let prev;
   order.forEach((id, i) => {
     if (dir === 'manual') { out[id] = i + 1; return; }
-    if (i === 0 || values[id] !== prev) { rank = i + 1; prev = values[id]; }
+    const key = phases ? `${phases[id]}:${values[id]}` : values[id];
+    if (i === 0 || key !== prev) { rank = i + 1; prev = key; }
     out[id] = rank;
   });
   return out;
 }
 
-/** Ids tied for the best value under the game's winner rule; empty when everyone is equal. */
-export function leaders(players, values, winner) {
-  const vals = players.map((p) => values[p.id]);
-  if (vals.length < 2 || vals.every((v) => v === vals[0])) return [];
+/** Ids tied for the best standing under the game's winner rule; empty when everyone is equal. */
+export function leaders(players, values, winner, phases = null) {
+  if (players.length < 2) return [];
+  let pool = players;
+  if (phases) {
+    const most = Math.max(...players.map((p) => phases[p.id]));
+    pool = players.filter((p) => phases[p.id] === most);
+  }
+  const vals = pool.map((p) => values[p.id]);
   const best = winner === 'low' ? Math.min(...vals) : Math.max(...vals);
-  return players.filter((p) => values[p.id] === best).map((p) => p.id);
+  const top = pool.filter((p) => values[p.id] === best).map((p) => p.id);
+  return top.length === players.length ? [] : top;
 }
 
-/** Final winners (ties are shared wins). */
+/** Final winners (ties are shared wins). Phase games: most phases first, then points. */
 export function winners(match) {
+  if (!match.players.length) return [];
   const t = totals(match);
-  const vals = match.players.map((p) => t[p.id]);
-  if (!vals.length) return [];
+  const phases = phaseKey(match);
+  let pool = match.players;
+  if (phases) {
+    const most = Math.max(...pool.map((p) => phases[p.id]));
+    pool = pool.filter((p) => phases[p.id] === most);
+  }
+  const vals = pool.map((p) => t[p.id]);
   const best = match.game.winner === 'low' ? Math.min(...vals) : Math.max(...vals);
-  return match.players.filter((p) => t[p.id] === best).map((p) => p.id);
+  return pool.filter((p) => t[p.id] === best).map((p) => p.id);
 }
 
 /** Compact rows from 6 players (5 at the largest text size). */
@@ -155,6 +238,10 @@ export function markerId(match) {
 export function isOver(match) {
   const g = match.game;
   if (!match.rounds.length) return false;
+  if (hasPhases(g)) {
+    const done = phasesDone(match);
+    if (match.players.some((p) => done[p.id] >= g.phases)) return true;
+  }
   if (g.end.kind === 'target') {
     const t = totals(match);
     return match.players.some((p) => t[p.id] >= g.end.target);
@@ -182,13 +269,18 @@ export function bump(match, playerId, amount) {
   return m;
 }
 
-/** Save a round from { id: int } (missing = 0). Moves the marker; ends the game if it should. */
-export function saveRound(match, scores, now = Date.now()) {
+/**
+ * Save a round from { id: int } (missing = 0), plus who made their phase in phase games.
+ * Moves the marker; ends the game if it should.
+ */
+export function saveRound(match, scores, now = Date.now(), made = []) {
   const clean = {};
   for (const p of match.players) clean[p.id] = clampInt(scores[p.id] || 0);
+  const round = { n: currentRoundNumber(match), scores: clean };
+  if (hasPhases(match.game)) round.made = match.players.map((p) => p.id).filter((id) => made.includes(id));
   const m = {
     ...match,
-    rounds: [...match.rounds, { n: currentRoundNumber(match), scores: clean }],
+    rounds: [...match.rounds, round],
     pending: {}, entry: null,
     markerSeat: match.players.length ? ((match.markerSeat || 0) + 1) % match.players.length : 0,
   };
@@ -200,9 +292,14 @@ export function finish(match, now = Date.now(), early = false) {
   return { ...match, endedAt: now, winnerIds: winners(match), early, entry: null, pending: early ? match.pending : {} };
 }
 
-/** Fix one saved round's scores (game-over table). Recomputes the winners of a finished game. */
-export function editRound(match, index, scores) {
-  const rounds = match.rounds.map((r, i) => (i === index ? { ...r, scores: { ...r.scores, ...mapInts(scores) } } : r));
+/** Fix one saved round's scores (and who made their phase). Recomputes the winners of a finished game. */
+export function editRound(match, index, scores, made = null) {
+  const rounds = match.rounds.map((r, i) => {
+    if (i !== index) return r;
+    const next = { ...r, scores: { ...r.scores, ...mapInts(scores) } };
+    if (made && hasPhases(match.game)) next.made = match.players.map((p) => p.id).filter((id) => made.includes(id));
+    return next;
+  });
   const m = { ...match, rounds };
   if (m.endedAt) m.winnerIds = winners(m);
   return m;
@@ -242,16 +339,20 @@ export function describeGame(g) {
   if (g.end.kind === 'target') parts.push(`first to ${g.end.target}`);
   if (g.rounds.show && g.rounds.end != null) parts.push(`rounds ${g.rounds.start}–${g.rounds.end}`);
   else if (g.end.kind === 'lastRound' && g.rounds.end != null) parts.push(`${g.rounds.end - g.rounds.start + 1} hands`);
+  if (hasPhases(g)) parts.push(`${g.phases} phases`);
   if (g.marker === 'dealer') parts.push('dealer shown');
   if (g.marker === 'first') parts.push('first player shown');
   return parts.join(' · ');
 }
 
 export function ruleRows(g) {
+  const phased = hasPhases(g);
+  const ends = g.end.kind === 'target' ? `First to ${g.end.target}` : g.end.kind === 'lastRound' ? `After round ${g.rounds.end}` : 'When you stop';
   return [
-    ['Winner', g.winner === 'low' ? 'Lowest score' : 'Highest score'],
-    ['Game ends', g.end.kind === 'target' ? `First to ${g.end.target}` : g.end.kind === 'lastRound' ? `After round ${g.rounds.end}` : 'When you stop'],
+    ['Winner', phased ? `Most phases, then ${g.winner === 'low' ? 'lowest' : 'highest'} score` : g.winner === 'low' ? 'Lowest score' : 'Highest score'],
+    ['Game ends', phased ? `When someone finishes phase ${g.phases}${g.end.kind === 'none' ? '' : ` or ${ends.toLowerCase()}`}` : ends],
     ['Round counter', g.rounds.show ? `${g.rounds.start} to ${g.rounds.end ?? 'no limit'}` : 'Off'],
+    ...(g.rounds.show && g.rounds.label === 'named' && g.rounds.names?.length ? [['Round names', g.rounds.names.join(', ')]] : []),
     ['Each round shows', g.marker === 'dealer' ? 'Dealer' : g.marker === 'first' ? 'First player' : 'None'],
     ['Quick buttons', g.quick.length ? g.quick.map(fmtSigned).join('  ') : 'None'],
   ];
@@ -279,16 +380,30 @@ export function sanitiseGame(raw) {
   const rEnd = r.end === undefined ? null : r.end;
   if (rEnd !== null && (!isInt(rEnd) || rEnd < start || rEnd - start > 999)) throw new BadGameError('Bad last round');
   if (end.kind === 'lastRound' && rEnd === null) throw new BadGameError('Needs a last round');
-  if (!['cardsWild', 'number'].includes(r.label ?? 'number')) throw new BadGameError('Bad label');
+  const label = r.label ?? 'number';
+  if (!['cardsWild', 'number', 'named'].includes(label)) throw new BadGameError('Bad label');
+  let names;
+  if (label === 'named') {
+    if (!Array.isArray(r.names) || r.names.length > 1000 || !r.names.every((x) => typeof x === 'string')) throw new BadGameError('Bad round names');
+    names = r.names.map((x) => x.replace(/\s+/g, ' ').trim().slice(0, MAX_ROUND_NAME)).filter(Boolean);
+    if (!names.length) throw new BadGameError('Needs round names');
+  }
   if (!['dealer', 'first', 'none'].includes(raw.marker)) throw new BadGameError('Bad marker');
   const quick = raw.quick === undefined ? [] : raw.quick;
   if (!Array.isArray(quick) || quick.length > MAX_QUICK || !quick.every((q) => isInt(q) && q !== 0)) throw new BadGameError('Bad quick buttons');
-  return {
+  const phases = raw.phases ?? null;
+  if (phases !== null && (!Number.isInteger(phases) || phases < 1 || phases > MAX_PHASES)) throw new BadGameError('Bad phases');
+  if (raw.notes !== undefined && typeof raw.notes !== 'string') throw new BadGameError('Bad notes');
+  const notes = (raw.notes || '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '').trim().slice(0, MAX_NOTES);
+  const out = {
     name, winner: raw.winner,
     end: { kind: end.kind, target },
-    rounds: { show: r.show, start, end: rEnd, label: r.label ?? 'number' },
-    marker: raw.marker, quick: [...quick],
+    rounds: { show: r.show, start, end: rEnd, label, ...(names ? { names } : {}) },
+    marker: raw.marker, quick: [...quick], phases, notes,
   };
+  // Only a short key into the app's own how-to-play text: never text or a link from outside.
+  if (typeof raw.about === 'string' && /^preset-[a-z0-9-]{1,30}$/.test(raw.about)) out.about = raw.about;
+  return out;
 }
 
 // ---------- share links and files ----------
@@ -299,12 +414,12 @@ function toB64Url(str) {
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 function fromB64Url(s) {
-  if (typeof s !== 'string' || s.length > 4000 || !/^[A-Za-z0-9_-]*$/.test(s)) throw new BadGameError('Bad link');
+  if (typeof s !== 'string' || s.length > 12000 || !/^[A-Za-z0-9_-]*$/.test(s)) throw new BadGameError('Bad link');
   const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4));
   return new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }
 
-/** Only the rules: never ids, players, names of people or scores. */
+/** Only the rules and notes: never ids, players, names of people or scores. */
 export function shareJson(game) { return { v: 1, game: sanitiseGame(game) }; }
 export function encodeShare(game) { return toB64Url(JSON.stringify(shareJson(game))); }
 

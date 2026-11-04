@@ -618,3 +618,32 @@ h1:focus { outline: none; } /* focused by the router for screen readers only */
 }
 /* Rows swap in place; the moved ring fades in and out instead. */
 .reduce-motion .card.moved { animation-name: ring-fade !important; animation-duration: var(--dur-moved-ring) !important; }
+
+/* ---------- 0.2: how to play, notes, phases, hidden games ---------- */
+.how-h { font-size: calc(var(--fs-body) + 1px); font-weight: 800; color: var(--ink); margin-top: 2px; }
+.how-list { padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-body); line-height: 1.43; color: var(--ink-2); }
+.dialog p.how-notes { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--note-bg); border: var(--chip-border); border-radius: 14px; padding: 12px 14px; color: var(--ink); }
+.how-table-wrap { flex: none; overflow-x: auto; background: var(--bg); border: var(--chip-border); border-radius: 16px; }
+.how-table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
+.how-table caption { text-align: left; font-weight: 700; padding: 10px 12px 4px; color: var(--ink); }
+.how-table th, .how-table td { padding: 7px 6px; text-align: right; white-space: nowrap; }
+.how-table th:first-child { text-align: left; padding-left: 12px; }
+.how-table thead th { color: var(--muted); font-weight: 700; }
+.how-table tbody tr { border-top: 1px solid var(--line-soft); }
+.notes-input { min-height: 120px; padding: 12px 14px; resize: vertical; line-height: 1.4; font-weight: 500; }
+.games-list li { display: flex; align-items: center; }
+.games-list .list-row { flex: 1 1 auto; min-width: 0; }
+.tag { display: inline-block; vertical-align: middle; margin-left: 6px; font-size: var(--fs-badge); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 8px; border: 1.5px solid var(--line-strong); color: var(--muted); }
+.note-link { display: flex; align-items: center; min-height: var(--tap-min); color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; }
+.c-phase { font-size: var(--fs-label); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
+.re-li-phase { display: flex; gap: 6px; align-items: stretch; }
+.re-li-phase .re-row { flex: 1 1 auto; min-width: 0; }
+.re-phase, .fix-made {
+  flex: none; width: 92px; min-height: var(--tap-min); border-radius: 14px; border: 2px dashed var(--line-strong);
+  background: transparent; color: var(--ink); font-size: var(--fs-label); font-weight: 700; line-height: 1.15;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 4px 6px; text-align: center;
+}
+.re-phase .rp-top { display: inline-flex; align-items: center; gap: 3px; }
+.re-phase[aria-pressed="true"], .fix-made[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border: 2px solid var(--accent); }
+.fix-made { grid-column: 1 / -1; }
+.full .made { font-weight: 800; }
